@@ -7,6 +7,7 @@ import com.centit.support.database.orm.GeneratorType;
 import com.centit.support.database.orm.ValueGenerator;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.Data;
 import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.NotBlank;
 
@@ -20,6 +21,7 @@ import java.util.Date;
 @Entity
 @Table(name = "F_OPT_LOG")
 @ApiModel(value="系统操作日志对象",description="系统操作日志对象 OptLog")
+@Data
 public class OptLog implements java.io.Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -40,7 +42,6 @@ public class OptLog implements java.io.Serializable {
     @ApiModelProperty(value = "日志级别 使用常量LEVEL_INFO和LEVEL_ERROR表示 默认级别为LEVEL_INFO",name = "logLevel")
     @ValueGenerator(strategy = GeneratorType.CONSTANT, occasion = GeneratorTime.NEW, value = OperationLog.LEVEL_INFO)
     private String logLevel;
-
 
     @Column(name = "USER_CODE")
     @NotBlank(message = "字段不能为空")
@@ -89,34 +90,15 @@ public class OptLog implements java.io.Serializable {
     private String optContent;
 
     /**
-     * 新值
+     * 新值; 用于新旧值对比，也可以用于其他解释
      */
     @Column(name = "NEW_VALUE")
     private String newValue;
     /**
-     * 原值
+     * 原值; 用于新旧值对比，也可以用于其他解释
      */
     @Column(name = "OLD_VALUE")
     private String oldValue;
-
-    public String getOptTag() {
-        return optTag;
-    }
-
-    public String getNewValue() {
-        return newValue;
-    }
-
-    public void setNewValue(String newValue) {
-        this.newValue = newValue;
-    }
-
-    public void setOptTag(String optTag) {
-        this.optTag = optTag;
-    }
-
-
-    // Constructors
 
     /**
      * default constructor
@@ -124,121 +106,31 @@ public class OptLog implements java.io.Serializable {
     public OptLog() {
     }
 
-    public OptLog(String userCode, String optId, String optTag, String optmethod, String oldvalue, String optcontent) {
-        this.userCode = userCode;
-        // this.userCode = ((FUserDetail)
-        // (SecurityContextHolder.getContext().getAuthentication().getPrincipal())).getUsercode();
-
-        this.optId = optId;
-        this.optTag = optTag;
-        this.optMethod = optmethod;
-        this.optContent = optcontent;
-        this.oldValue = oldvalue;
+    public static OptLog valueOf(OperationLog other) {
+        OptLog log = new OptLog();
+        log.logLevel = other.getLogLevel();
+        log.userCode = other.getUserCode();
+        log.optTime = other.getOptTime();
+        log.optId = other.getOptId();
+        log.optTag = other.getOptTag();
+        log.optMethod = other.getOptMethod();
+        log.optContent = other.getOptContent();
+        log.newValue = other.getNewValue();
+        log.oldValue = other.getOldValue();
+        return log;
     }
 
-    public OptLog(Long logid, String loglevel, String userCode, Date opttime, String optid, String optmethod,
-                  String optcontent, String oldvalue) {
-
-        this.logId = logid;
-
-        this.logLevel = loglevel;
-        this.userCode = userCode;
-        this.optTime = opttime;
-        this.optId = optid;
-        this.optMethod = optmethod;
-        this.optContent = optcontent;
-        this.oldValue = oldvalue;
-    }
-
-    public Long getLogId() {
-        return this.logId;
-    }
-
-    public void setLogId(Long logid) {
-        this.logId = logid;
-    }
-
-    // Property accessors
-
-    public String getLogLevel() {
-        return this.logLevel;
-    }
-
-    public void setLogLevel(String loglevel) {
-        this.logLevel = loglevel;
-    }
-
-    public String getUserCode() {
-        return this.userCode;
-    }
-
-    public void setUserCode(String userCode) {
-        this.userCode = userCode;
-    }
-
-    public Date getOptTime() {
-        return this.optTime;
-    }
-
-    public void setOptTime(Date opttime) {
-        this.optTime = opttime;
-    }
-
-    public String getOptId() {
-        return this.optId;
-    }
-
-    public void setOptId(String optid) {
-        this.optId = optid;
-    }
-
-    public String getOptMethod() {
-        return this.optMethod;
-    }
-
-    public void setOptMethod(String optmethod) {
-        this.optMethod = optmethod;
-    }
-
-    public String getOptContent() {
-        return this.optContent;
-    }
-
-    public void setOptContent(String optcontent) {
-        this.optContent = optcontent;
-    }
-
-    public String getOldValue() {
-        return this.oldValue;
-    }
-
-    public void setOldValue(String oldvalue) {
-        this.oldValue = oldvalue;
-    }
-
-    public void copy(OperationLog other) {
-        this.logLevel = other.getLogLevel();
-        this.userCode = other.getUserCode();
-        this.optTime = other.getOptTime();
-        this.optId = other.getOptId();
-        this.optTag = other.getOptTag();
-        this.optMethod = other.getOptMethod();
-        this.optContent = other.getOptContent();
-        this.newValue = other.getNewValue();
-        this.oldValue = other.getOldValue();
-    }
-
-    public String getOptMethodText() {
-        if (OperationLog.P_OPT_LOG_METHOD_C.equals(getOptMethod())) {
-            return "新增";
-        }
-        if (OperationLog.P_OPT_LOG_METHOD_D.equals(getOptMethod())) {
-            return "删除";
-        }
-        if (OperationLog.P_OPT_LOG_METHOD_U.equals(getOptMethod())) {
-            return "更新";
-        }
-
-        return this.optMethod;
+    public OperationLog toOperationLog() {
+        OperationLog log = new OperationLog();
+        log.setLogLevel(this.logLevel);
+        log.setUserCode(this.userCode);
+        log.setOptTime(this.optTime);
+        log.setOptId(this.optId);
+        log.setOptTag(this.optTag);
+        log.setOptMethod(this.optMethod);
+        log.setOptContent(this.optContent);
+        log.setNewValue(this.newValue);
+        log.setOldValue(this.oldValue);
+        return log;
     }
 }
