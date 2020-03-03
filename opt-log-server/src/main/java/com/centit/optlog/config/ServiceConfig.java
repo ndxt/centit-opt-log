@@ -8,6 +8,7 @@ import org.springframework.context.annotation.*;
  * Created by codefan on 17-7-18.
  */
 @Configuration
+@PropertySource("classpath:system.properties")
 @Import(JdbcConfig.class)
 @ComponentScan(basePackages = "com.centit",
         excludeFilters = @ComponentScan.Filter(value = org.springframework.stereotype.Controller.class))
