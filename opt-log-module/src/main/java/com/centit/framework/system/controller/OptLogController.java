@@ -18,14 +18,12 @@ import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.constraints.NotNull;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 @Controller
@@ -36,8 +34,6 @@ public class OptLogController extends BaseController {
     @Autowired
     @NotNull
     private OptLogManager optLogManager;
-
-    //private String optId = "OPTLOG";
 
     /**
      * @return 业务标识ID
@@ -67,7 +63,7 @@ public class OptLogController extends BaseController {
     public ResponseMapData list(String[] field, PageDesc pageDesc, HttpServletRequest request) {
         Map<String, Object> searchColumn = BaseController.collectRequestParameters(request);
 
-        JSONArray jsonArray = optLogManager.listObjectsAsJson(field, searchColumn, pageDesc);
+        JSONArray jsonArray = optLogManager.listOptLogsAsJson(field, searchColumn, pageDesc);
 
         ResponseMapData resData = new ResponseMapData();
         resData.addResponseData(PageQueryResult.OBJECT_LIST_LABEL, jsonArray);
@@ -88,7 +84,7 @@ public class OptLogController extends BaseController {
     @RequestMapping(value = "/{logId}", method = {RequestMethod.GET})
     @WrapUpResponseBody
     public ResponseData getOptLogById(@PathVariable Long logId) {
-        OptLog dbOptLog = optLogManager.getObjectById(logId);
+        OptLog dbOptLog = optLogManager.getOptLogById(logId);
         if (null == dbOptLog) {
             return ResponseData.makeErrorMessage("日志信息不存在");
         }
@@ -108,14 +104,8 @@ public class OptLogController extends BaseController {
     @RecordOperationLog(content = "操作IP地址:{loginIp},用户{loginUser.userName}删除日志")
     @WrapUpResponseBody
     public ResponseData deleteOne(@PathVariable Long logId) {
-//        OptLog optLog = optLogManager.getObjectById(logId);
-        optLogManager.deleteObjectById(logId);
+        optLogManager.deleteOptLogById(logId);
         return ResponseData.successResponse;
-
-        /***************log*******************/
-//        OperationLogCenter.logDeleteObject(request, optId, logId.toString(), OperationLog.P_OPT_LOG_METHOD_D,
-//                "删除日志", optLog);
-        /***************log*******************/
     }
 
     /**
@@ -131,15 +121,7 @@ public class OptLogController extends BaseController {
     @RecordOperationLog(content = "操作IP地址:{loginIp},用户{loginUser.userName}删除日志")
     @WrapUpResponseBody
     public ResponseData deleteMany(Long[] logIds) {
-        /*for(Long logId : logIds) {
-            OptLog optLog = optLogManager.getObjectById(logId);
-            *//***************log*******************//*
-            OperationLogCenter.logDeleteObject(request, optId, logId.toString(), OperationLog.P_OPT_LOG_METHOD_D,
-                    "删除日志", optLog);
-            *//***************log*******************//*
-        }*/
         optLogManager.deleteMany(logIds);
-
         return ResponseData.successResponse;
     }
 
@@ -163,7 +145,19 @@ public class OptLogController extends BaseController {
     @WrapUpResponseBody
     public ResponseData deleteByTime(Date begin, Date end) {
         optLogManager.delete(begin, end);
-
         return ResponseData.successResponse;
+    }
+
+    @RequestMapping(method = RequestMethod.POST)
+    @WrapUpResponseBody
+    public void saveOne(@RequestBody OptLog optLog) {
+        optLogManager.saveOptLog(optLog);
+    }
+
+    @RequestMapping(value = "saveMany",method = RequestMethod.POST)
+    @WrapUpResponseBody
+    public void saveMany(@RequestBody String optLogJsonArray) {
+        List<OptLog> optlogs = JSONArray.parseArray(optLogJsonArray, OptLog.class);
+        optLogManager.saveBatchOptLogs(optlogs);
     }
 }

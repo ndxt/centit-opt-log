@@ -37,35 +37,13 @@ public class OptLogDao extends BaseDaoImpl<OptLog, Long> {
         return filterField;
     }
 
-    @SuppressWarnings("unchecked")
-    @Transactional
-    public List<String> listOptIds() {
-        final String hql = "select DISTINCT f.OPT_ID from F_OPT_LOG f";
-
-        return this.getJdbcTemplate().queryForList(hql,String.class);
-    }
-
-
-    @Transactional
-    public Long createNewLogId(){
-        return DatabaseOptUtils.getSequenceNextValue(this, "S_SYS_LOG");
-    }
-
-    public OptLog getObjectById(Long logId) {
+     public OptLog getObjectById(Long logId) {
         return super.getObjectById(logId);
     }
 
     @Transactional
     public void deleteObjectById(Long logId) {
         super.deleteObjectById(logId);
-    }
-
-    @Transactional
-    public void mergeOptLog(OptLog o) {
-        if (null == o.getLogId()) {
-            o.setLogId(DatabaseOptUtils.getSequenceNextValue(this, "S_SYS_LOG"));
-        }
-       /* return */super.mergeObject(o);
     }
 
     @Transactional

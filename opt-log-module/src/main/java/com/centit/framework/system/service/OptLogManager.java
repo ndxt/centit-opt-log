@@ -12,18 +12,17 @@ import java.util.Map;
 
 public interface OptLogManager {
 
-     OptLog getObjectById(Long logId);
+    OptLog getOptLogById(Long logId);
 
+    void deleteOptLogById(Long logId);
 
-     void deleteObjectById(Long logId);
+    void saveOptLog(OptLog optLog);
+
     /**
      * 批量保存
-     *
      * @param optLogs List OptLog
-     * @throws IOException IOException
-     * @throws SQLException SQLException
      */
-    void saveBatchObjects(List<OptLog> optLogs) throws IOException, SQLException;
+    void saveBatchOptLogs(List<OptLog> optLogs);
     /**
      * 清理此日期之间的日志信息
      *
@@ -32,11 +31,9 @@ public interface OptLogManager {
      */
     void delete(Date begin, Date end);
 
-    List<String> listOptIds();
-
     void deleteMany(Long[] logIds);
 
-    JSONArray listObjectsAsJson(
+    JSONArray listOptLogsAsJson(
         String[] fields,
         Map<String, Object> filterMap, PageDesc pageDesc);
 }

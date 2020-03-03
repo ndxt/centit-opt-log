@@ -18,6 +18,7 @@ import org.springframework.util.CollectionUtils;
 
 import javax.validation.constraints.NotNull;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service("optLogManager")
 public class OptLogManagerImpl implements OptLogManager, OperationLogWriter {
@@ -33,17 +34,21 @@ public class OptLogManagerImpl implements OptLogManager, OperationLogWriter {
         this.optLogDao = optLogDao;
     }
 
+
     @Override
     @Transactional(propagation=Propagation.REQUIRED)
-    public void saveBatchObjects(List<OptLog> optLogs) {
+    public void saveOptLog(OptLog optLog){
+        optLogDao.saveNewObject(optLog);
+    }
+
+    @Override
+    @Transactional(propagation=Propagation.REQUIRED)
+    public void saveBatchOptLogs(List<OptLog> optLogs) {
         if (CollectionUtils.isEmpty(optLogs)) {
             return;
         }
         for (OptLog optLog : optLogs) {
-            //if (null == optLog.getLogId()) {
-            optLog.setLogId( optLogDao.createNewLogId());
             optLogDao.saveNewObject(optLog);
-            //}
         }
 
     }
@@ -51,16 +56,7 @@ public class OptLogManagerImpl implements OptLogManager, OperationLogWriter {
     @Override
     @Transactional(propagation=Propagation.REQUIRED)
     public void delete(Date begin, Date end) {
-        Map <String,String>map =new HashMap<String,String>();
-        map.put("beginDate", String.valueOf(begin));
-        map.put("endDate", String.valueOf(end));
         optLogDao.delete(begin, end);
-    }
-
-    @Override
-    @Transactional(propagation=Propagation.REQUIRED)
-    public List<String> listOptIds() {
-        return optLogDao.listOptIds();
     }
 
     @Override
@@ -73,26 +69,8 @@ public class OptLogManagerImpl implements OptLogManager, OperationLogWriter {
 
     @Override
     @Transactional(propagation=Propagation.REQUIRED)
-    public void save(final OperationLog optLog) {
-        OptLog optlog = OptLog.valueOf(optLog);
-        optlog.setLogId( optLogDao.createNewLogId());
-        optLogDao.saveNewObject(optlog);
-    }
-
-    @Override
-    @Transactional(propagation=Propagation.REQUIRED)
-    public void save(List<OperationLog> optLogs) {
-        List<OptLog> optlogs = new ArrayList<>(optLogs.size()+1);
-        for(OperationLog ol : optLogs){
-            optlogs.add(OptLog.valueOf(ol));
-        }
-        saveBatchObjects(optlogs);
-    }
-
-    @Override
-    @Transactional(propagation=Propagation.REQUIRED)
-    public JSONArray listObjectsAsJson( String[] fields,
-            Map<String, Object> filterMap, PageDesc pageDesc){
+    public JSONArray listOptLogsAsJson(String[] fields,
+                                       Map<String, Object> filterMap, PageDesc pageDesc){
         //filterMap.put(CodeBook.TABLE_SORT_FIELD, "optTime");
         //filterMap.put("optId", new String[]{"login","admin","optTime"});
         return DictionaryMapUtils.mapJsonArray(
@@ -100,18 +78,47 @@ public class OptLogManagerImpl implements OptLogManager, OperationLogWriter {
                     OptLog.class);
     }
 
-
     @Override
     @Transactional
-    public OptLog getObjectById(Long logId) {
+    public OptLog getOptLogById(Long logId) {
         return optLogDao.getObjectById(logId);
     }
 
 
     @Override
     @Transactional
-    public void deleteObjectById(Long logId) {
+    public void deleteOptLogById(Long logId) {
         optLogDao.deleteObjectById(logId);
+    }
+
+    @Override
+    @Transactional(propagation=Propagation.REQUIRED)
+    public void save(final OperationLog optLog) {
+        OptLog optlog = OptLog.valueOf(optLog);
+        optLogDao.saveNewObject(optlog);
+    }
+
+    @Override
+    @Transactional(propagation=Propagation.REQUIRED)
+    public void save(List<OperationLog> optLogs) {
+        for(OperationLog optlog : optLogs){
+            optLogDao.saveNewObject(OptLog.valueOf(optlog));
+        }
+    }
+
+    @Override
+    public List<? extends OperationLog> listOptLog(String optId, Map<String, Object> filterMap, int startPos, int maxRows) {
+        filterMap.put("optId", optId);
+        List<OptLog> optlogs = optLogDao.listObjectsByProperties(filterMap, startPos, maxRows);
+        if(optlogs==null || optlogs.size()==0)
+            return null;
+        return optlogs.stream().map(OptLog::toOperationLog).collect(Collectors.toList());
+    }
+
+    @Override
+    public int countOptLog(String optId, Map<String, Object> filterMap) {
+        filterMap.put("optId", optId);
+        return optLogDao.countObject(filterMap);
     }
 
 }

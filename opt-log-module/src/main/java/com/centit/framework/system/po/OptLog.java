@@ -18,8 +18,7 @@ import java.util.Date;
 /**
  * 系统操作日志
  */
-@Entity
-@Table(name = "F_OPT_LOG")
+
 @ApiModel(value="系统操作日志对象",description="系统操作日志对象 OptLog")
 @Data
 public class OptLog implements java.io.Serializable {
@@ -28,7 +27,7 @@ public class OptLog implements java.io.Serializable {
 
     @Id
     @Column(name = "LOG_ID")
-    //@GeneratedValue(generator = "assignedGenerator")
+    @ValueGenerator(strategy = GeneratorType.UUID22)
     private Long logId;
 
     /**
