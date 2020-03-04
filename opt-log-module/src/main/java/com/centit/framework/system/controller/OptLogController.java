@@ -8,6 +8,7 @@ import com.centit.framework.core.controller.WrapUpResponseBody;
 import com.centit.framework.core.dao.CodeBook;
 import com.centit.framework.core.dao.DictionaryMapUtils;
 import com.centit.framework.core.dao.PageQueryResult;
+import com.centit.framework.model.basedata.OperationLog;
 import com.centit.framework.operationlog.RecordOperationLog;
 import com.centit.framework.system.po.OptLog;
 import com.centit.framework.system.service.OptLogManager;
@@ -56,7 +57,7 @@ public class OptLogController extends BaseController {
             allowMultiple = true, paramType = "query", dataType = "String"),
         @ApiImplicitParam(
             name = "pageDesc", value = "分页对象",
-            paramType = "body", dataTypeClass = PageDesc.class)
+            paramType = "query", dataTypeClass = PageDesc.class)
     })
     @GetMapping
     @WrapUpResponseBody
@@ -154,10 +155,44 @@ public class OptLogController extends BaseController {
         optLogManager.saveOptLog(optLog);
     }
 
-    @RequestMapping(value = "saveMany",method = RequestMethod.POST)
+    @RequestMapping(value = "/saveMany",method = RequestMethod.POST)
     @WrapUpResponseBody
     public void saveMany(@RequestBody String optLogJsonArray) {
         List<OptLog> optlogs = JSONArray.parseArray(optLogJsonArray, OptLog.class);
         optLogManager.saveBatchOptLogs(optlogs);
+    }
+
+    @ApiOperation(value = "按应用查询日志", notes = "按应用查询日志。")
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+            name = "optId", value = "业务系统名",
+            allowMultiple = true, paramType = "path", dataType = "String"),
+        @ApiImplicitParam(
+            name = "startPos", value = "查询起始位置offset",
+            paramType = "query", dataTypeClass = Integer.class),
+        @ApiImplicitParam(
+            name = "maxSize", value = "返回条数",
+            paramType = "query", dataTypeClass = Integer.class)
+    })
+    @GetMapping("/query/{optId}")
+    @WrapUpResponseBody
+    public List<? extends OperationLog> queryOptlog(String optId,
+                                                     Integer startPos,
+                                                     Integer maxSize,
+                                                     HttpServletRequest request) {
+        Map<String, Object> searchColumn = BaseController.collectRequestParameters(request);
+        return optLogManager.listOptLog(
+            optId, searchColumn, startPos, maxSize);
+    }
+
+    @ApiOperation(value = "按应用查询日志", notes = "按应用查询日志。")
+    @ApiImplicitParam(
+        name = "optId", value = "业务系统名",
+        allowMultiple = true, paramType = "path", dataType = "String")
+    @GetMapping("/count/{optId}")
+    @WrapUpResponseBody
+    public Integer countOptlog(String optId, HttpServletRequest request) {
+        Map<String, Object> searchColumn = BaseController.collectRequestParameters(request);
+        return optLogManager.countOptLog(optId, searchColumn);
     }
 }

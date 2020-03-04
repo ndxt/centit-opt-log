@@ -21,7 +21,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Service("optLogManager")
-public class OptLogManagerImpl implements OptLogManager, OperationLogWriter {
+public class OptLogManagerImpl implements OptLogManager {
 
     public static final Logger logger = LoggerFactory.getLogger(OptLogManager.class);
 
