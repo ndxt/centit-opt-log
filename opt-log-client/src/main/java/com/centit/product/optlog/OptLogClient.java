@@ -1,13 +1,11 @@
 package com.centit.product.optlog;
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
 import com.centit.framework.appclient.AppSession;
 import com.centit.framework.appclient.HttpReceiveJSON;
 import com.centit.framework.appclient.RestfulHttpRequest;
 import com.centit.framework.model.adapter.OperationLogWriter;
 import com.centit.framework.model.basedata.OperationLog;
-import com.centit.support.common.ObjectException;
 import com.centit.support.network.UrlOptUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
