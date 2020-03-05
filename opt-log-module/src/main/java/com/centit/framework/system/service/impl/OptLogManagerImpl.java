@@ -110,7 +110,9 @@ public class OptLogManagerImpl implements OptLogManager {
     @Override
     public List<? extends OperationLog> listOptLog(String optId, Map<String, Object> filterMap, int startPos, int maxRows) {
         filterMap.put("optId", optId);
-        List<OptLog> optlogs = optLogDao.listObjectsByProperties(filterMap, startPos, maxRows);
+        List<OptLog> optlogs = (startPos >= 0 && maxRows > 0) ?
+            optLogDao.listObjectsByProperties(filterMap, startPos, maxRows):
+            optLogDao.listObjectsByProperties(filterMap);
         if(optlogs==null || optlogs.size()==0)
             return null;
         return optlogs.stream().map(OptLog::toOperationLog).collect(Collectors.toList());
