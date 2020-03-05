@@ -53,6 +53,7 @@ public class OptLog implements java.io.Serializable {
     @Column(name = "OPT_TIME")
     @NotNull(message = "字段不能为空")
     @Temporal(TemporalType.TIMESTAMP)
+    @ValueGenerator(strategy = GeneratorType.FUNCTION, value = "today()")
     private Date optTime;
 
     /**
