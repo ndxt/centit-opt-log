@@ -31,17 +31,6 @@
 
         <dependency>
             <groupId>com.centit.framework</groupId>
-            <artifactId>centit-persistence-extend</artifactId>
-            <version>${centit.persistence.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.centit.framework</groupId>
-            <artifactId>centit-persistence-jdbc</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>com.centit.framework</groupId>
             <artifactId>centit-persistence-jdbc-config</artifactId>
         </dependency>
 
