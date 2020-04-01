@@ -21,6 +21,7 @@ import java.util.Date;
 
 @ApiModel(value="系统操作日志对象",description="系统操作日志对象 OptLog")
 @Data
+@Table(name = "F_OPT_LOG")
 public class OptLog implements java.io.Serializable {
 
     private static final long serialVersionUID = 1L;
