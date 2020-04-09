@@ -45,7 +45,7 @@ public class OptLog implements java.io.Serializable {
 
     @Column(name = "USER_CODE")
     @NotBlank(message = "字段不能为空")
-    @Length(max = 8, message = "字段长度不能大于{max}")
+    @Length(max = 32, message = "字段长度不能大于{max}")
     @DictionaryMap(fieldName="userName",value="userCode")
     @ApiModelProperty(value = "用户代码",name = "userCode",required = true)
     private String userCode;
@@ -114,6 +114,9 @@ public class OptLog implements java.io.Serializable {
         log.optTime = other.getOptTime();
         log.optId = other.getOptId();
         log.optTag = other.getOptTag();
+        if(log.optTag!=null && log.optTag.length()>200){
+            log.optTag = log.optTag.substring(0,200);
+        }
         log.optMethod = other.getOptMethod();
         log.optContent = other.getOptContent();
         log.newValue = other.getNewValue();
