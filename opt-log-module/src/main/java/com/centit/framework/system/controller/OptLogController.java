@@ -148,7 +148,7 @@ public class OptLogController extends BaseController {
         optLogManager.delete(begin, end);
         return ResponseData.successResponse;
     }
-
+    //暂时把saveOne在swagger中暴露出来
     @RequestMapping(method = RequestMethod.POST)
     @WrapUpResponseBody
     public void saveOne(@RequestBody OptLog optLog) {

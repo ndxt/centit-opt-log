@@ -29,7 +29,7 @@ public class OptLog implements java.io.Serializable {
     @Id
     @Column(name = "LOG_ID")
     @ValueGenerator(strategy = GeneratorType.UUID22)
-    private Long logId;
+    private String logId;//原本是Long类型
 
     /**
      * 日志级别
@@ -100,6 +100,17 @@ public class OptLog implements java.io.Serializable {
      */
     @Column(name = "OLD_VALUE")
     private String oldValue;
+    /**
+     * 机构代码
+     */
+    @Column(name = "UNIT_CODE")
+    private String unitCode;
+
+    /**
+     * 关联id
+     */
+    @Column(name = "CORRELATION_ID")
+    private String correlationId;
 
     /**
      * default constructor

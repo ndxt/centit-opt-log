@@ -55,6 +55,19 @@
             <artifactId>junit</artifactId>
             <scope>test</scope>
         </dependency>
+        <!--添加springcontenxt测试依赖-->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!--jdbc 测试中提示com.mysql.drive打不开，所以后来重新添加了依赖mysql-connector-java-->
+        <!-- https://mvnrepository.com/artifact/mysql/mysql-connector-java -->
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <version>6.0.6</version>
+        </dependency>
 
         <!-- server runtime library -->
         <dependency>
@@ -63,6 +76,23 @@
             <version>${jdk.version}</version>
             <systemPath>${env.JAVA_HOME}/lib/tools.jar</systemPath>
             <scope>system</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-cli</artifactId>
+            <version>0.5.0.M1</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-test</artifactId>
+            <version>5.2.0.M1</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.centit.framework</groupId>
+            <artifactId>centit-persistence-jdbc-config</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 
