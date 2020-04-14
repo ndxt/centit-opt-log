@@ -20,20 +20,17 @@ public class OptLogDao extends BaseDaoImpl<OptLog, Long> {
     public static final Logger logger = LoggerFactory.getLogger(OptLogDao.class);
 
     public Map<String, String> getFilterField() {
-        if (filterField == null) {
-            filterField = new HashMap<>();
-            filterField.put("logId", CodeBook.EQUAL_HQL_ID);
-            filterField.put("logLevel", CodeBook.LIKE_HQL_ID);
-            filterField.put(CodeRepositoryUtil.USER_CODE, CodeBook.EQUAL_HQL_ID);
-            filterField.put("(date)optTimeBegin", "optTime >= :optTimeBegin ");
-            filterField.put("(nextday)optTimeEnd", "optTime < :optTimeEnd");
-            filterField.put("optId", CodeBook.LIKE_HQL_ID);
-            filterField.put("optCode", CodeBook.LIKE_HQL_ID);
-            filterField.put("optContent", CodeBook.LIKE_HQL_ID);
-            filterField.put("oldValue", CodeBook.LIKE_HQL_ID);
-            filterField.put("optMethod", CodeBook.EQUAL_HQL_ID);
-
-        }
+        Map<String, String> filterField = new HashMap<>();
+        filterField.put("logId", CodeBook.EQUAL_HQL_ID);
+        filterField.put("logLevel", CodeBook.LIKE_HQL_ID);
+        filterField.put(CodeRepositoryUtil.USER_CODE, CodeBook.EQUAL_HQL_ID);
+        filterField.put("(date)optTimeBegin", "optTime >= :optTimeBegin ");
+        filterField.put("(nextday)optTimeEnd", "optTime < :optTimeEnd");
+        filterField.put("optId", CodeBook.LIKE_HQL_ID);
+        filterField.put("optCode", CodeBook.LIKE_HQL_ID);
+        filterField.put("optContent", CodeBook.LIKE_HQL_ID);
+        filterField.put("oldValue", CodeBook.LIKE_HQL_ID);
+        filterField.put("optMethod", CodeBook.EQUAL_HQL_ID);
         return filterField;
     }
 
