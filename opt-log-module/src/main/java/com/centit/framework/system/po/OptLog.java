@@ -9,7 +9,6 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import org.hibernate.validator.constraints.Length;
-import org.hibernate.validator.constraints.NotBlank;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -37,16 +36,16 @@ public class OptLog implements java.io.Serializable {
      * 默认级别为LEVEL_INFO
      */
     @Column(name = "LOG_LEVEL")
-    @NotBlank(message = "字段不能为空")
+    @NotNull(message = "字段不能为空")
     @Length(max = 2, message = "字段长度不能大于{max}")
     @ApiModelProperty(value = "日志级别 使用常量LEVEL_INFO和LEVEL_ERROR表示 默认级别为LEVEL_INFO",name = "logLevel")
     @ValueGenerator(strategy = GeneratorType.CONSTANT, occasion = GeneratorTime.NEW, value = OperationLog.LEVEL_INFO)
     private String logLevel;
 
     @Column(name = "USER_CODE")
-    @NotBlank(message = "字段不能为空")
+    @NotNull(message = "字段不能为空")
     @Length(max = 32, message = "字段长度不能大于{max}")
-    @DictionaryMap(fieldName="userName",value="userCode")
+    @DictionaryMap(fieldName="userName", value="userCode")
     @ApiModelProperty(value = "用户代码",name = "userCode",required = true)
     private String userCode;
 
@@ -63,7 +62,7 @@ public class OptLog implements java.io.Serializable {
     @Column(name = "OPT_ID")
     @ValueGenerator(strategy = GeneratorType.CONSTANT, occasion = GeneratorTime.NEW, value = "system")
     @Length(max = 64, message = "字段长度不能大于{max}")
-    @DictionaryMap(fieldName="optName",value="optId")
+    @DictionaryMap(fieldName="optName", value="optId")
     private String optId;
 
     /**
@@ -87,7 +86,7 @@ public class OptLog implements java.io.Serializable {
      * 操作内容描述
      */
     @Column(name = "OPT_CONTENT")
-    @NotBlank(message = "字段不能为空")
+    @NotNull(message = "字段不能为空")
     private String optContent;
 
     /**
