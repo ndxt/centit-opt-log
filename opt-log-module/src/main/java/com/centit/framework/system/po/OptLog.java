@@ -131,6 +131,8 @@ public class OptLog implements java.io.Serializable {
         log.optContent = other.getOptContent();
         log.newValue = other.getNewValue();
         log.oldValue = other.getOldValue();
+        log.unitCode = other.getUnitCode();
+        log.correlationId = other.getCorrelationId();
         return log;
     }
 
@@ -145,6 +147,8 @@ public class OptLog implements java.io.Serializable {
         log.setOptContent(this.optContent);
         log.setNewValue(this.newValue);
         log.setOldValue(this.oldValue);
+        log.setUnitCode(this.unitCode);
+        log.setCorrelationId(this.correlationId);
         return log;
     }
 }
