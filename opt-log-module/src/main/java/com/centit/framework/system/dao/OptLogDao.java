@@ -6,8 +6,6 @@ import com.centit.framework.jdbc.dao.BaseDaoImpl;
 import com.centit.framework.jdbc.dao.DatabaseOptUtils;
 import com.centit.framework.system.po.OptLog;
 import com.centit.support.database.utils.PersistenceException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,9 +13,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.*;
 
 @Repository("optLogDao")
-public class OptLogDao extends BaseDaoImpl<OptLog, Long> {
+public class OptLogDao extends BaseDaoImpl<OptLog, String> {
 
-    public static final Logger logger = LoggerFactory.getLogger(OptLogDao.class);
+    //public static final Logger logger = LoggerFactory.getLogger(OptLogDao.class);
 
     public Map<String, String> getFilterField() {
         Map<String, String> filterField = new HashMap<>();
@@ -34,12 +32,12 @@ public class OptLogDao extends BaseDaoImpl<OptLog, Long> {
         return filterField;
     }
 
-     public OptLog getObjectById(Long logId) {
+    public OptLog getObjectById(String logId) {
         return super.getObjectById(logId);
     }
 
     @Transactional
-    public void deleteObjectById(Long logId) {
+    public void deleteObjectById(String logId) {
         super.deleteObjectById(logId);
     }
 

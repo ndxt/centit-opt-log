@@ -81,10 +81,10 @@ public class OptLogController extends BaseController {
     @ApiOperation(value = "查询单条日志", notes = "根据日志id查询单条日志。")
     @ApiImplicitParam(
         name = "logId", value = "日志id",
-        required = true, paramType = "query", dataType = "Long")
+        required = true, paramType = "query", dataType = "String")
     @RequestMapping(value = "/{logId}", method = {RequestMethod.GET})
     @WrapUpResponseBody
-    public ResponseData getOptLogById(@PathVariable Long logId) {
+    public ResponseData getOptLogById(@PathVariable String logId) {
         OptLog dbOptLog = optLogManager.getOptLogById(logId);
         if (null == dbOptLog) {
             return ResponseData.makeErrorMessage("日志信息不存在");
@@ -100,11 +100,11 @@ public class OptLogController extends BaseController {
     @ApiOperation(value = "删除单条系统日志", notes = "根据日志id删除单条日志。")
     @ApiImplicitParam(
         name = "logId", value = "日志id",
-        required = true, paramType = "query", dataType = "Long")
+        required = true, paramType = "query", dataType = "String")
     @RequestMapping(value = "/{logId}", method = {RequestMethod.DELETE})
     @RecordOperationLog(content = "操作IP地址:{loginIp},用户{loginUser.userName}删除日志")
     @WrapUpResponseBody
-    public ResponseData deleteOne(@PathVariable Long logId) {
+    public ResponseData deleteOne(@PathVariable String logId) {
         optLogManager.deleteOptLogById(logId);
         return ResponseData.successResponse;
     }
@@ -117,11 +117,11 @@ public class OptLogController extends BaseController {
     @ApiOperation(value = "删除多条系统日志", notes = "删除多条系统日志。")
     @ApiImplicitParam(
         name = "logIds", value = "数组格式，多个日志ID", required = true,
-        allowMultiple = true, paramType = "query", dataType = "Long")
+        allowMultiple = true, paramType = "query", dataType = "String")
     @RequestMapping(value = "/deleteMany", method = RequestMethod.DELETE)
     @RecordOperationLog(content = "操作IP地址:{loginIp},用户{loginUser.userName}删除日志")
     @WrapUpResponseBody
-    public ResponseData deleteMany(Long[] logIds) {
+    public ResponseData deleteMany(String[] logIds) {
         optLogManager.deleteMany(logIds);
         return ResponseData.successResponse;
     }

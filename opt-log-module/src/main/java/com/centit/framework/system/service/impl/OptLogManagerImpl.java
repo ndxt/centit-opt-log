@@ -7,8 +7,6 @@ import com.centit.framework.system.dao.OptLogDao;
 import com.centit.framework.system.po.OptLog;
 import com.centit.framework.system.service.OptLogManager;
 import com.centit.support.database.utils.PageDesc;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -24,8 +22,7 @@ import java.util.stream.Collectors;
 @Service("optLogManager")
 public class OptLogManagerImpl implements OptLogManager {
 
-    public static final Logger logger = LoggerFactory.getLogger(OptLogManager.class);
-
+    //public static final Logger logger = LoggerFactory.getLogger(OptLogManager.class);
 
     private OptLogDao optLogDao;
 
@@ -62,8 +59,8 @@ public class OptLogManagerImpl implements OptLogManager {
 
     @Override
     @Transactional(propagation=Propagation.REQUIRED)
-    public void deleteMany(Long[] logIds) {
-        for (Long logId : logIds) {
+    public void deleteMany(String[] logIds) {
+        for (String logId : logIds) {
             optLogDao.deleteObjectById(logId);
         }
     }
@@ -81,14 +78,14 @@ public class OptLogManagerImpl implements OptLogManager {
 
     @Override
     @Transactional
-    public OptLog getOptLogById(Long logId) {
+    public OptLog getOptLogById(String logId) {
         return optLogDao.getObjectById(logId);
     }
 
 
     @Override
     @Transactional
-    public void deleteOptLogById(Long logId) {
+    public void deleteOptLogById(String logId) {
         optLogDao.deleteObjectById(logId);
     }
 

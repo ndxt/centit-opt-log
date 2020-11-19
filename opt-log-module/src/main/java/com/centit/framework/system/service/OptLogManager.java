@@ -11,9 +11,9 @@ import java.util.Map;
 
 public interface OptLogManager extends OperationLogWriter {
 
-    OptLog getOptLogById(Long logId);
+    OptLog getOptLogById(String logId);
 
-    void deleteOptLogById(Long logId);
+    void deleteOptLogById(String logId);
 
     void saveOptLog(OptLog optLog);
 
@@ -30,7 +30,7 @@ public interface OptLogManager extends OperationLogWriter {
      */
     void delete(Date begin, Date end);
 
-    void deleteMany(Long[] logIds);
+    void deleteMany(String[] logIds);
 
     JSONArray listOptLogsAsJson(
         String[] fields,
