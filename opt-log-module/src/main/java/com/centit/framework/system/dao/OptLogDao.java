@@ -29,6 +29,8 @@ public class OptLogDao extends BaseDaoImpl<OptLog, String> {
         filterField.put("optContent", CodeBook.LIKE_HQL_ID);
         filterField.put("oldValue", CodeBook.LIKE_HQL_ID);
         filterField.put("optMethod", CodeBook.EQUAL_HQL_ID);
+        filterField.put("optTag", CodeBook.EQUAL_HQL_ID);
+        filterField.put("userCode", CodeBook.EQUAL_HQL_ID);
         return filterField;
     }
 
