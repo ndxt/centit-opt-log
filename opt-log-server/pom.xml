@@ -15,9 +15,15 @@
     <dependencies>
         <dependency>
             <groupId>com.centit.product</groupId>
-            <artifactId>opt-log-module</artifactId>
+            <artifactId>rmdb-opt-log</artifactId>
             <version>${project.version}</version>
         </dependency>
+
+        <!--<dependency>
+            <groupId>com.centit.product</groupId>
+            <artifactId>elk-opt-log</artifactId>
+            <version>${project.version}</version>
+        </dependency>-->
 
         <dependency>
             <groupId>com.centit.framework</groupId>
