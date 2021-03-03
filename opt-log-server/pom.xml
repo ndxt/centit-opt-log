@@ -18,6 +18,11 @@
             <artifactId>rmdb-opt-log</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.centit.product</groupId>
+            <artifactId>elk-opt-log</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 
         <!--<dependency>
             <groupId>com.centit.product</groupId>
