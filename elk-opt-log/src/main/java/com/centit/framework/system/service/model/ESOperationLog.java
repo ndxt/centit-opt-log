@@ -3,7 +3,6 @@ package com.centit.framework.system.service.model;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.alibaba.fastjson.annotation.JSONField;
 import com.centit.framework.model.basedata.OperationLog;
 import com.centit.search.annotation.ESField;
 import com.centit.search.annotation.ESType;
@@ -15,13 +14,16 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import java.io.Serializable;
 import java.util.Date;
 import java.util.UUID;
 
 @Data
 @Entity
 @ESType(indexName = "esoperationlog")
-public class ESOperationLog implements ESDocument {
+public class ESOperationLog implements ESDocument , Serializable {
+
+    private static final long serialVersionUID =  1L;
 
     //es id
     @Id
