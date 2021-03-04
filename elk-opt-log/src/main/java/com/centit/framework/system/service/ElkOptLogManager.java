@@ -14,6 +14,7 @@ import javax.annotation.Resource;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 @Service("elkOptLogManager")
 public class ElkOptLogManager implements OperationLogWriter {
@@ -23,7 +24,7 @@ public class ElkOptLogManager implements OperationLogWriter {
 
     @Override
     public void save(OperationLog operationLog) {
-        ESOperationLog esOperationLog = (ESOperationLog) operationLog;
+        ESOperationLog esOperationLog = ESOperationLog.fromOperationLog(operationLog,null);
         if (esObjectIndexer.saveNewDocument(esOperationLog) == null) {
             throw new ObjectException(500, "elasticsearch操作失败");
         }
@@ -32,8 +33,7 @@ public class ElkOptLogManager implements OperationLogWriter {
     @Override
     public void save(List<OperationLog> optLogs) {
         for(OperationLog operationLog : optLogs){
-            ESOperationLog esOperationLog = (ESOperationLog) operationLog;
-            save(esOperationLog);
+            save(operationLog);
         }
     }
 
@@ -43,9 +43,9 @@ public class ElkOptLogManager implements OperationLogWriter {
         }
     }
 
-
-    public void updateOperationLog(OperationLog optLog) {
-        if (esObjectIndexer.mergeDocument((ESOperationLog)optLog) == null) {
+    public void updateOperationLog(OperationLog operationLog,String logId) {
+        ESOperationLog esOperationLog = ESOperationLog.fromOperationLog(operationLog,logId);
+        if (esObjectIndexer.mergeDocument(esOperationLog) == null) {
             throw new ObjectException(500, "elasticsearch操作失败");
         }
     }

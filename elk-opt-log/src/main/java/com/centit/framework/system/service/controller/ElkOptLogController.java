@@ -37,8 +37,8 @@ public class ElkOptLogController {
      */
     @ApiOperation(value = "单条新增日志信息")
     @RequestMapping(value = "/createOperationLog", method = {RequestMethod.POST})
-    public ResponseData createOperationLog(@RequestBody ESOperationLog esOperationLog) throws IOException {
-        elkOptLogManager.save(esOperationLog);
+    public ResponseData createOperationLog(@RequestBody OperationLog operationLog) throws IOException {
+        elkOptLogManager.save(operationLog);
         return ResponseData.makeSuccessResponse();
     }
     /**
@@ -47,8 +47,8 @@ public class ElkOptLogController {
      */
     @ApiOperation(value = "批量新增日志信息")
     @RequestMapping(value = "/batchCreateOperationLog", method = {RequestMethod.POST})
-    public ResponseData batchCreateOperationLog(@RequestBody List<ESOperationLog> esOperationLogs) throws IOException {
-        esOperationLogs.forEach(esOperationLog ->{
+    public ResponseData batchCreateOperationLog(@RequestBody List<OperationLog> operationLogs) throws IOException {
+        operationLogs.forEach(esOperationLog ->{
             elkOptLogManager.save(esOperationLog);
         } );
         return ResponseData.makeSuccessResponse();
@@ -65,13 +65,15 @@ public class ElkOptLogController {
         return ResponseData.makeSuccessResponse();
     }
 
+
+
     /**
      * 修改
      */
     @ApiOperation(value = "修改日志信息")
-    @RequestMapping(value = "/updateOperationLog", method = {RequestMethod.PUT})
-    public void updateOperationLog(@RequestBody ESOperationLog esOperationLog) {
-        elkOptLogManager.updateOperationLog(esOperationLog);
+    @RequestMapping(value = "/updateOperationLog/{logId}", method = {RequestMethod.PUT})
+    public void updateOperationLog(@RequestBody OperationLog operationLog,@PathVariable String logId) {
+        elkOptLogManager.updateOperationLog(operationLog,logId);
     }
 
     /**
@@ -89,6 +91,8 @@ public class ElkOptLogController {
         pageDesc.setTotalRows(NumberBaseOpt.castObjectToInteger(res.getLeft()));
         return PageQueryResult.createResult(res.getRight(), pageDesc);
     }
+
+
 
     @ApiOperation(value = "模糊查询日志信息")
     @RequestMapping(value = "/listESall/{queryWord}", method = RequestMethod.GET)
