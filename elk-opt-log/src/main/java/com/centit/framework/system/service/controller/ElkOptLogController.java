@@ -94,9 +94,9 @@ public class ElkOptLogController {
 
 
 
-    @ApiOperation(value = "模糊查询日志信息")
-    @RequestMapping(value = "/listESall/{queryWord}", method = RequestMethod.GET)
-    public PageQueryResult<Map<String, Object>> listEsAll(@PathVariable String queryWord, PageDesc pageDesc) {
+    @ApiOperation(value = "模糊查询日志信息（不填关键字默认查询全部）")
+    @RequestMapping(value = "/listESall", method = RequestMethod.GET)
+    public PageQueryResult<Map<String, Object>> listEsAll(String queryWord, PageDesc pageDesc) {
         Pair<Long, List<Map<String, Object>>> res = esObjectSearcher.search(queryWord, pageDesc.getPageNo(), pageDesc.getPageSize());
         pageDesc.setTotalRows(NumberBaseOpt.castObjectToInteger(res.getLeft()));
         return PageQueryResult.createResult(res.getRight(), pageDesc);
