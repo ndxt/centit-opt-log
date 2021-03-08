@@ -2,19 +2,14 @@ package com.centit.framework.system.service;
 
 import com.centit.framework.model.adapter.OperationLogWriter;
 import com.centit.framework.model.basedata.OperationLog;
-import com.centit.framework.system.service.model.ESOperationLog;
+import com.centit.framework.system.po.ESOperationLog;
 import com.centit.search.service.ESServerConfig;
 import com.centit.search.service.Impl.ESIndexer;
 import com.centit.support.common.ObjectException;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.List;
-import java.util.UUID;
 
 @Service("elkOptLogManager")
 public class ElkOptLogManager implements OperationLogWriter {
