@@ -33,7 +33,9 @@ public class ElkOptLogController extends BaseController {
 
     /**
      * 单条日志新增
-     * @return
+     *
+     * @param operationLog
+     * @throws IOException
      */
     @ApiOperation(value = "单条新增日志信息")
     @RequestMapping(value = "/createOperationLog", method = {RequestMethod.POST})
@@ -41,9 +43,12 @@ public class ElkOptLogController extends BaseController {
     public void createOperationLog(@RequestBody OperationLog operationLog) throws IOException {
         elkOptLogManager.save(operationLog);
     }
+
     /**
      * 批量日志新增
-     * @return
+     *
+     * @param operationLogs
+     * @throws IOException
      */
     @ApiOperation(value = "批量新增日志信息")
     @RequestMapping(value = "/batchCreateOperationLog", method = {RequestMethod.POST})
@@ -56,7 +61,8 @@ public class ElkOptLogController extends BaseController {
 
     /**
      * 删除
-     * @param logId questionId
+     *
+     * @param logId
      */
     @ApiOperation(value = "删除日志信息")
     @RequestMapping(value = "/deleteOperationLog/{logId}", method = {RequestMethod.DELETE})
@@ -65,10 +71,11 @@ public class ElkOptLogController extends BaseController {
         elkOptLogManager.deleteObjectById(logId);
     }
 
-
-
     /**
      * 修改
+     *
+     * @param operationLog
+     * @param logId
      */
     @ApiOperation(value = "修改日志信息")
     @RequestMapping(value = "/updateOperationLog/{logId}", method = {RequestMethod.PUT})
