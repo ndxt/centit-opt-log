@@ -27,33 +27,33 @@ public class ESOperationLog implements ESDocument , Serializable {
 
     //es id
     @Id
-    @ESField(type = "text",index=true,query = true)
+    @ESField(type = "text")
     private  String  logId;
 
     /**
      * 日志级别，用户可以自己解释这个属性
      */
-    @ESField(type = "text",index=true,query = true)
+    @ESField(type = "text")
     private String logLevel;
 
 
     /**
      * 操作用户
      */
-    @ESField(type = "text",index=true,query = true)
+    @ESField(type = "text")
     private String userCode;
 
 
     /**
      * 操作用户所属机构
      */
-    @ESField(type = "text",index=true,query = true)
+    @ESField(type = "text")
     private String unitCode;
 
     /**
      * 同一个请求同一个 协作号，主要用于调试和跟踪
      */
-    @ESField(type = "text",index=true,query = true)
+    @ESField(type = "text")
     private String correlationId;
 
     /**
@@ -66,37 +66,37 @@ public class ESOperationLog implements ESDocument , Serializable {
     /**
      * 操作业务编号
      */
-    @ESField(type = "text",index=true,query = true)
+    @ESField(type = "text")
     private String optId;
 
     /**
      * 业务操作方法
      */
-    @ESField(type = "text", index = true)
+    @ESField(type = "text")
     private String optMethod;
 
     /**
      * 业务对象组件，复合主键用&amp;连接格式与url参数类似
      */
-    @ESField(type = "text", index = true)
+    @ESField(type = "text")
     private String optTag;
 
     /**
      * 日志内容描述; 也可以是json
      */
-    @ESField(type = "text", index = true, query = true, highlight = true, analyzer = "ik_smart")
+    @ESField(type = "text", query = true, highlight = true, analyzer = "ik_smart")
     private String optContent;
 
     /**
      * 更新前旧值，json格式，这个字段不是必须的
      */
-    @ESField(type = "text", index = true, query = true, highlight = true, analyzer = "ik_smart")
+    @ESField(type = "text", query = true, highlight = true, analyzer = "ik_smart")
     private String newValue;
 
     /**
      * 更新后新值，json格式，这个字段不是必须的
      */
-    @ESField(type = "text", index = true, query = true, highlight = true, analyzer = "ik_smart")
+    @ESField(type = "text", query = true, highlight = true, analyzer = "ik_smart")
     private String oldValue;
 
 
