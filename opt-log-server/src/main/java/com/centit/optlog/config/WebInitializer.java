@@ -16,12 +16,14 @@ public class WebInitializer implements WebApplicationInitializer {
     @Override
     public void onStartup(ServletContext servletContext) throws ServletException {
 
-        String [] servletUrlPatterns = {"/system/*"};
+        String [] servletUrlPatterns = {"/system/*","/elk/*"};
         WebConfig.registerSpringConfig(servletContext, ServiceConfig.class);
         WebConfig.registerServletConfig(servletContext, "system",
             "/system/*",
             SystemSpringMvcConfig.class, SwaggerConfig.class);
-
+        WebConfig.registerServletConfig(servletContext, "elk",
+            "/elk/*",
+            ElkSpringMvcConfig.class, SwaggerConfig.class);
         WebConfig.registerRequestContextListener(servletContext);
         WebConfig.registerCharacterEncodingFilter(servletContext, servletUrlPatterns);
         WebConfig.registerHttpPutFormContentFilter(servletContext, servletUrlPatterns);

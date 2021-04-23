@@ -1,5 +1,7 @@
 package com.centit.framework.system.controller;
 
+import com.alibaba.fastjson.JSONObject;
+import com.centit.framework.common.ResponseData;
 import com.centit.framework.core.controller.BaseController;
 import com.centit.framework.core.controller.WrapUpResponseBody;
 import com.centit.framework.core.dao.PageQueryResult;
@@ -16,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -100,6 +103,30 @@ public class ElkOptLogController extends BaseController {
             esObjectSearcher.search(CollectionsOpt.createHashMap(map, value),queryWord, pageDesc.getPageNo(), pageDesc.getPageSize());
         pageDesc.setTotalRows(NumberBaseOpt.castObjectToInteger(res.getLeft()));
         return PageQueryResult.createResult(res.getRight(), pageDesc);
+    }
+
+    @ApiOperation(value = "精确查询日志信息")
+    @RequestMapping(value = "/listOptLog", method = RequestMethod.GET)
+    @WrapUpResponseBody
+    public PageQueryResult<? extends OperationLog> listOptLog(HttpServletRequest request, PageDesc pageDesc) {
+        Map<String,Object> map = BaseController.collectRequestParameters(request);
+       if (map!= null&& (map.containsKey("pageSize") || map.containsKey("pageNo"))){
+           map.remove("pageSize");
+           map.remove("pageNo");
+       }
+        List<? extends OperationLog> operationLogs = elkOptLogManager.listOptLog("", map, pageDesc.getPageNo(), pageDesc.getPageSize());
+        return PageQueryResult.createResult(operationLogs, pageDesc);
+    }
+
+    @ApiOperation(value = "精确查询日志信息数量")
+    @RequestMapping(value = "/countOptLog", method = RequestMethod.GET)
+    @WrapUpResponseBody
+    public ResponseData countOptLog(HttpServletRequest request) {
+        Map<String,Object> map = BaseController.collectRequestParameters(request);
+        int count = elkOptLogManager.countOptLog( "",map);
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("count",count);
+        return ResponseData.makeResponseData(jsonObject);
     }
 
 

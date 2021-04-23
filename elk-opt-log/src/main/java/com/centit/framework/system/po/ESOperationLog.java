@@ -21,7 +21,7 @@ import java.util.UUID;
 @Data
 @Entity
 @ESType(indexName = "esoperationlog")
-public class ESOperationLog implements ESDocument , Serializable {
+public class ESOperationLog  implements ESDocument , Serializable {
 
     private static final long serialVersionUID =  1L;
 
@@ -60,8 +60,7 @@ public class ESOperationLog implements ESDocument , Serializable {
      * 操作时间
      */
     @ESField(type = "date")
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date optTime;
+    private Long optTime;
 
     /**
      * 操作业务编号
@@ -110,14 +109,14 @@ public class ESOperationLog implements ESDocument , Serializable {
         return (JSONObject) JSON.toJSON(this);
     }
 
-    public static ESOperationLog fromOperationLog(OperationLog log,String logId){
+    public static ESOperationLog fromOperationLog(OperationLog log, String logId){
         ESOperationLog esLog = new ESOperationLog();
         if (StringUtils.isBlank(logId)){
             esLog.setLogId(UUID.randomUUID().toString().replaceAll("-",""));
         }else {
             esLog.setLogId(logId);
         }
-        esLog.setOptTime(log.getOptTime());
+        esLog.setOptTime(log.getOptTime()==null?null:log.getOptTime().getTime());
         esLog.setCorrelationId(log.getCorrelationId());
         esLog.setLogLevel(log.getLogLevel());
         esLog.setNewValue(log.getNewValue());

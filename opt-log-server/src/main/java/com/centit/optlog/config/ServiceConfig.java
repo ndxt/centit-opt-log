@@ -2,11 +2,10 @@ package com.centit.optlog.config;
 
 import com.centit.framework.config.InitialWebRuntimeEnvironment;
 import com.centit.framework.jdbc.config.JdbcConfig;
-import com.centit.framework.system.service.model.ESOperationLog;
+import com.centit.framework.system.po.ESOperationLog;
 import com.centit.search.service.ESServerConfig;
 import com.centit.search.service.Impl.ESIndexer;
 import com.centit.search.service.Impl.ESSearcher;
-import com.centit.search.service.Indexer;
 import com.centit.search.service.IndexerSearcherFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

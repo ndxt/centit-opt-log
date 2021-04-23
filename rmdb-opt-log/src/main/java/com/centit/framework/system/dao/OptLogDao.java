@@ -17,6 +17,7 @@ public class OptLogDao extends BaseDaoImpl<OptLog, String> {
 
     //public static final Logger logger = LoggerFactory.getLogger(OptLogDao.class);
 
+    @Override
     public Map<String, String> getFilterField() {
         Map<String, String> filterField = new HashMap<>();
         filterField.put("logId", CodeBook.EQUAL_HQL_ID);
@@ -31,6 +32,7 @@ public class OptLogDao extends BaseDaoImpl<OptLog, String> {
         filterField.put("optMethod", CodeBook.EQUAL_HQL_ID);
         filterField.put("optTag", CodeBook.EQUAL_HQL_ID);
         filterField.put("userCode", CodeBook.EQUAL_HQL_ID);
+        filterField.put("unitCode_in", "UNIT_CODE in (:unitCode_in)");
         return filterField;
     }
 

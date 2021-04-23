@@ -23,7 +23,7 @@ public class SwaggerConfig extends WebMvcConfigurerAdapter {
             .apiInfo(buildApiInf())//.pathMapping("../service")
             .select()
             .apis(RequestHandlerSelectors.withMethodAnnotation(ApiOperation.class) )
-            .apis(RequestHandlerSelectors.basePackage("com.centit.framework.system.service.controller"))//controller路径
+            //.apis(RequestHandlerSelectors.basePackage("com.centit.framework.system.service.controller"))//controller路径
             //.apis(RequestHandlerSelectors.basePackage("com.otherpackage.controller"))//controller路径
             .paths(PathSelectors.any())
             .build();
