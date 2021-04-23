@@ -1,5 +1,6 @@
 package com.centit.framework.system.service;
 
+import cn.hutool.core.date.DateUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.centit.framework.core.controller.SmartDateFormat;
 import com.centit.framework.model.adapter.OperationLogWriter;
@@ -34,6 +35,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 @Service("elkOptLogManager")
@@ -65,6 +67,8 @@ public class ElkOptLogManager implements OperationLogWriter {
             restHighLevelClient = restHighLevelClientGenericObjectPool.borrowObject();
             BulkRequest requestBulk = new BulkRequest(indexName);
             for (OperationLog operationLog : optLogs) {
+                //统一入库时间格式
+                operationLog.setOptTime(DateUtil.parse( new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(operationLog.getOptTime())));
                 String json = JSONObject.toJSONString(operationLog);
                 String documentid =  UUID.randomUUID().toString().replaceAll("-","");
                 IndexRequest indexReq = new IndexRequest().source(json, XContentType.JSON);
@@ -195,7 +199,7 @@ public class ElkOptLogManager implements OperationLogWriter {
 
     private void buildQuery(String key, String field, Object value,BoolQueryBuilder boolQueryBuilder) throws ParseException {
         String optSuffix = key.substring(key.length() - 3).toLowerCase();
-        long date = new SmartDateFormat("yyyy-MM-dd HH:mm:ss").parse(String.valueOf(value)).getTime();
+        Date date = new SmartDateFormat("yyyy-MM-dd HH:mm:ss").parse(String.valueOf(value));
         switch (optSuffix) {
             case "_gt":
                 boolQueryBuilder.must(QueryBuilders.rangeQuery(field).gt(date));
