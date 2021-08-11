@@ -110,7 +110,9 @@ public class OptLog implements java.io.Serializable {
      */
     @Column(name = "CORRELATION_ID")
     private String correlationId;
-
+    @Column(name = "LOGIN_IP")
+    @Length(max = 200, message = "字段长度不能大于{max}")
+    private String loginIp;
     /**
      * default constructor
      */
