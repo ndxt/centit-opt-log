@@ -53,8 +53,8 @@ public class OptLogManagerImpl implements OptLogManager {
 
     @Override
     @Transactional(propagation=Propagation.REQUIRED)
-    public void delete(Date begin, Date end) {
-        optLogDao.delete(begin, end);
+    public int delete(String begin) {
+        return optLogDao.delete(begin);
     }
 
     @Override

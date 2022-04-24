@@ -26,9 +26,8 @@ public interface OptLogManager extends OperationLogWriter {
      * 清理此日期之间的日志信息
      *
      * @param begin Date
-     * @param end Date
      */
-    void delete(Date begin, Date end);
+    int delete(String begin);
 
     void deleteMany(String[] logIds);
 

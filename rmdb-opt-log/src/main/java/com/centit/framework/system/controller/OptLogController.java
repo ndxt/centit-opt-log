@@ -12,6 +12,7 @@ import com.centit.framework.model.basedata.OperationLog;
 import com.centit.framework.operationlog.RecordOperationLog;
 import com.centit.framework.system.po.OptLog;
 import com.centit.framework.system.service.OptLogManager;
+import com.centit.support.algorithm.StringBaseOpt;
 import com.centit.support.database.utils.PageDesc;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -23,7 +24,6 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.constraints.NotNull;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -129,24 +129,19 @@ public class OptLogController extends BaseController {
     /**
      * 删除某时段之前的系统日志
      *
-     * @param begin Date
-     * @param end   Date
+     * @param beginDate Date
      */
     @ApiOperation(value = "删除某时段之前的系统日志", notes = "删除某时段之前的系统日志。")
-    @ApiImplicitParams({
-        @ApiImplicitParam(
-            name = "begin", value = "开始时间点(参数为时间还未实现)",
-            paramType = "query", dataType = "Date"),
-        @ApiImplicitParam(
-            name = "end", value = "结束时间点",
-            paramType = "query", dataTypeClass = Date.class)
-    })
-    @RequestMapping(value = "/delete", method = {RequestMethod.DELETE})
+    @ApiImplicitParam(name = "beginDate", value = "开始时间点(参数为时间还未实现)")
+    @RequestMapping(value = "/delete/{beginDate}", method = {RequestMethod.DELETE})
     @RecordOperationLog(content = "操作IP地址:{loginIp},用户{loginUser.userName}删除日志")
     @WrapUpResponseBody
-    public ResponseData deleteByTime(Date begin, Date end) {
-        optLogManager.delete(begin, end);
-        return ResponseData.successResponse;
+    public ResponseData deleteByTime(@PathVariable String beginDate) {
+        if(StringBaseOpt.isNvl(beginDate)){
+            return ResponseData.makeErrorMessage("请指定具体的删除时间范围！");
+        }
+        int delete = optLogManager.delete(beginDate);
+        return ResponseData.makeSuccessResponse(StringBaseOpt.castObjectToString(delete));
     }
     //暂时把saveOne在swagger中暴露出来
     @RequestMapping(method = RequestMethod.POST)

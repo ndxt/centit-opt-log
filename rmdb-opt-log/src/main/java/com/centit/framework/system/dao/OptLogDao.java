@@ -5,12 +5,11 @@ import com.centit.framework.core.dao.CodeBook;
 import com.centit.framework.jdbc.dao.BaseDaoImpl;
 import com.centit.framework.jdbc.dao.DatabaseOptUtils;
 import com.centit.framework.system.po.OptLog;
-import com.centit.support.database.utils.PersistenceException;
-import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
 @Repository("optLogDao")
 public class OptLogDao extends BaseDaoImpl<OptLog, String> {
@@ -46,24 +45,9 @@ public class OptLogDao extends BaseDaoImpl<OptLog, String> {
     }
 
     @Transactional
-    public void delete(Date begin, Date end) {
-        String hql = "delete from F_OPT_LOG o where 1=1 ";
-        List<Object> objects = new ArrayList<>();
-        if (null != begin) {
-            hql += "and o.optTime > ?";
-            objects.add(begin);
-        }
-        if (null != end) {
-            hql += "and o.optTime < ?";
-            objects.add(end);
-        }
-
-        try {
-            DatabaseOptUtils.doExecuteSql(this, hql, objects.toArray(new Object[objects.size()]));
-        } catch (DataAccessException e) {
-            throw new PersistenceException(e);
-        }
-
+    public int delete(String begin) {
+        String delSql = "delete from F_OPT_LOG  where LOG_LEVEL= '0' and  OPT_TIME <= ? ";
+        return DatabaseOptUtils.doExecuteSql(this, delSql,new Object[]{begin});
     }
 
 }
