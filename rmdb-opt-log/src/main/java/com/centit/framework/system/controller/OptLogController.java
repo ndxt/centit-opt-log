@@ -132,7 +132,6 @@ public class OptLogController extends BaseController {
      * @param beginDate Date
      */
     @ApiOperation(value = "删除某时段之前的系统日志", notes = "删除某时段之前的系统日志。")
-    @ApiImplicitParam(name = "beginDate", value = "开始时间点(参数为时间还未实现)")
     @RequestMapping(value = "/delete/{beginDate}", method = {RequestMethod.DELETE})
     @RecordOperationLog(content = "操作IP地址:{loginIp},用户{loginUser.userName}删除日志")
     @WrapUpResponseBody
