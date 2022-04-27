@@ -1,6 +1,5 @@
 package com.centit.framework.system.service;
 
-import cn.hutool.core.date.DateUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.centit.framework.core.controller.SmartDateFormat;
 import com.centit.framework.model.adapter.OperationLogWriter;
@@ -35,7 +34,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 @Service("elkOptLogManager")

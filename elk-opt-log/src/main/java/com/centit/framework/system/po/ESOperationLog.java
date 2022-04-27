@@ -12,10 +12,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
 import java.io.Serializable;
-import java.util.Date;
 import java.util.UUID;
 
 @Data
@@ -35,7 +32,6 @@ public class ESOperationLog  implements ESDocument , Serializable {
      */
     @ESField(type = "text")
     private String logLevel;
-
 
     /**
      * 操作用户
@@ -61,6 +57,12 @@ public class ESOperationLog  implements ESDocument , Serializable {
      */
     @ESField(type = "date")
     private Long optTime;
+
+    /**
+     * 业务系统编号
+     */
+    @ESField(type = "text")
+    private String osId;
 
     /**
      * 操作业务编号
