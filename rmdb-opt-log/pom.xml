@@ -66,7 +66,6 @@
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
-            <version>6.0.6</version>
         </dependency>
 
         <!-- server runtime library -->
@@ -77,18 +76,20 @@
             <systemPath>${java.home}/../lib/tools.jar</systemPath>
             <scope>system</scope>
         </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-cli</artifactId>
             <version>0.5.0.M1</version>
             <scope>test</scope>
         </dependency>
+
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-test</artifactId>
-            <version>5.2.0.M1</version>
             <scope>test</scope>
         </dependency>
+
         <dependency>
             <groupId>com.centit.framework</groupId>
             <artifactId>centit-persistence-jdbc-config</artifactId>
