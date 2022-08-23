@@ -21,7 +21,7 @@ import java.util.Date;
 @ApiModel(value="系统操作日志对象",description="系统操作日志对象 OptLog")
 @Data
 @Table(name = "F_OPT_LOG")
-public class OptLog implements java.io.Serializable {
+public class RmdbOptLog implements java.io.Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -116,11 +116,11 @@ public class OptLog implements java.io.Serializable {
     /**
      * default constructor
      */
-    public OptLog() {
+    public RmdbOptLog() {
     }
 
-    public static OptLog valueOf(OperationLog other) {
-        OptLog log = new OptLog();
+    public static RmdbOptLog valueOf(OperationLog other) {
+        RmdbOptLog log = new RmdbOptLog();
         log.logLevel = other.getLogLevel();
         log.userCode = other.getUserCode();
         log.optTime = other.getOptTime();

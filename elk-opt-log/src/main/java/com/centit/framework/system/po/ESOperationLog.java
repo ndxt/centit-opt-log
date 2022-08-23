@@ -24,32 +24,32 @@ public class ESOperationLog  implements ESDocument , Serializable {
 
     //es id
     @Id
-    @ESField(type = "text")
+    @ESField(type = "keyword")
     private  String  logId;
 
     /**
      * 日志级别，用户可以自己解释这个属性
      */
-    @ESField(type = "text")
+    @ESField(type = "keyword")
     private String logLevel;
 
     /**
      * 操作用户
      */
-    @ESField(type = "text")
+    @ESField(type = "keyword")
     private String userCode;
 
 
     /**
      * 操作用户所属机构
      */
-    @ESField(type = "text")
+    @ESField(type = "keyword")
     private String unitCode;
 
     /**
      * 同一个请求同一个 协作号，主要用于调试和跟踪
      */
-    @ESField(type = "text")
+    @ESField(type = "keyword")
     private String correlationId;
 
     /**
@@ -61,25 +61,25 @@ public class ESOperationLog  implements ESDocument , Serializable {
     /**
      * 业务系统编号
      */
-    @ESField(type = "text")
+    @ESField(type = "keyword")
     private String osId;
 
     /**
      * 操作业务编号
      */
-    @ESField(type = "text")
+    @ESField(type = "keyword")
     private String optId;
 
     /**
      * 业务操作方法
      */
-    @ESField(type = "text")
+    @ESField(type = "keyword")
     private String optMethod;
 
     /**
      * 业务对象组件，复合主键用&amp;连接格式与url参数类似
      */
-    @ESField(type = "text")
+    @ESField(type = "keyword")
     private String optTag;
 
     /**

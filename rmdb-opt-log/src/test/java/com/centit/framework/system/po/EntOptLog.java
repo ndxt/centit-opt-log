@@ -5,6 +5,6 @@ import javax.persistence.Table;
 
 @Entity
 @Table(name = "F_OPT_LOG")
-public class EntOptLog extends OptLog {
+public class EntOptLog extends RmdbOptLog {
 
 }

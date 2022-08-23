@@ -1,11 +1,10 @@
-package com.centit.framework.system.service.impl;
+package com.centit.framework.system.service;
 
 import com.alibaba.fastjson.JSONArray;
 import com.centit.framework.core.dao.DictionaryMapUtils;
 import com.centit.framework.model.basedata.OperationLog;
-import com.centit.framework.system.dao.OptLogDao;
-import com.centit.framework.system.po.OptLog;
-import com.centit.framework.system.service.OptLogManager;
+import com.centit.framework.system.dao.RmdbOptLogDao;
+import com.centit.framework.system.po.RmdbOptLog;
 import com.centit.support.database.utils.PageDesc;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -18,34 +17,34 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-@Service("optLogManager")
-public class OptLogManagerImpl implements OptLogManager {
+@Service("rmdbOptLogManager")
+public class RmdbOptLogManager implements OperationLogManager {
 
-    //public static final Logger logger = LoggerFactory.getLogger(OptLogManager.class);
-
-    private OptLogDao optLogDao;
+    private RmdbOptLogDao optLogDao;
 
     @Autowired
     @NotNull
-    public void setOptLogDao(OptLogDao optLogDao) {
+    public void setOptLogDao(RmdbOptLogDao optLogDao) {
         this.optLogDao = optLogDao;
     }
 
 
     @Override
     @Transactional(propagation=Propagation.REQUIRED)
-    public void saveOptLog(OptLog optLog){
-        optLogDao.saveNewObject(optLog);
+    public void saveOptLog(OperationLog optLog){
+        RmdbOptLog rmdbOptLog = RmdbOptLog.valueOf(optLog);
+        optLogDao.saveNewObject(rmdbOptLog);
     }
 
     @Override
     @Transactional(propagation=Propagation.REQUIRED)
-    public void saveBatchOptLogs(List<OptLog> optLogs) {
+    public void saveBatchOptLogs(List<OperationLog> optLogs) {
         if (CollectionUtils.isEmpty(optLogs)) {
             return;
         }
-        for (OptLog optLog : optLogs) {
-            optLogDao.saveNewObject(optLog);
+        for (OperationLog optLog : optLogs) {
+            RmdbOptLog rmdbOptLog = RmdbOptLog.valueOf(optLog);
+            optLogDao.saveNewObject(rmdbOptLog);
         }
 
     }
@@ -68,17 +67,16 @@ public class OptLogManagerImpl implements OptLogManager {
     @Transactional(propagation=Propagation.REQUIRED)
     public JSONArray listOptLogsAsJson(String[] fields,
                                        Map<String, Object> filterMap, PageDesc pageDesc){
-        //filterMap.put(CodeBook.TABLE_SORT_FIELD, "optTime");
-        //filterMap.put("optId", new String[]{"login","admin","optTime"});
         return DictionaryMapUtils.mapJsonArray(
                     optLogDao.listObjectsPartFieldAsJson( filterMap, fields ,pageDesc),
-                    OptLog.class);
+                    RmdbOptLog.class);
     }
 
     @Override
     @Transactional
-    public OptLog getOptLogById(String logId) {
-        return optLogDao.getObjectById(logId);
+    public OperationLog getOptLogById(String logId) {
+        RmdbOptLog rmdbOptLog = optLogDao.getObjectById(logId);
+        return rmdbOptLog.toOperationLog();
     }
 
 
@@ -91,7 +89,7 @@ public class OptLogManagerImpl implements OptLogManager {
     @Override
     @Transactional(propagation=Propagation.REQUIRED)
     public void save(final OperationLog optLog) {
-        OptLog optlog = OptLog.valueOf(optLog);
+        RmdbOptLog optlog = RmdbOptLog.valueOf(optLog);
         optLogDao.saveNewObject(optlog);
     }
 
@@ -99,19 +97,19 @@ public class OptLogManagerImpl implements OptLogManager {
     @Transactional(propagation=Propagation.REQUIRED)
     public void save(List<OperationLog> optLogs) {
         for(OperationLog optlog : optLogs){
-            optLogDao.saveNewObject(OptLog.valueOf(optlog));
+            optLogDao.saveNewObject(RmdbOptLog.valueOf(optlog));
         }
     }
 
     @Override
     public List<? extends OperationLog> listOptLog(String optId, Map<String, Object> filterMap, int startPos, int maxRows) {
         filterMap.put("optId", optId);
-        List<OptLog> optlogs = (startPos >= 0 && maxRows > 0) ?
+        List<RmdbOptLog> optlogs = (startPos >= 0 && maxRows > 0) ?
             optLogDao.listObjects(filterMap, new PageDesc(startPos, maxRows)):
             optLogDao.listObjects(filterMap);
         if(optlogs==null || optlogs.size()==0)
             return null;
-        return optlogs.stream().map(OptLog::toOperationLog).collect(Collectors.toList());
+        return optlogs.stream().map(RmdbOptLog::toOperationLog).collect(Collectors.toList());
     }
 
     @Override

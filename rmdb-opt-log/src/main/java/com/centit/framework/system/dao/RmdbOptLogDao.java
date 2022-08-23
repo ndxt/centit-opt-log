@@ -4,7 +4,7 @@ import com.centit.framework.components.CodeRepositoryUtil;
 import com.centit.framework.core.dao.CodeBook;
 import com.centit.framework.jdbc.dao.BaseDaoImpl;
 import com.centit.framework.jdbc.dao.DatabaseOptUtils;
-import com.centit.framework.system.po.OptLog;
+import com.centit.framework.system.po.RmdbOptLog;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -12,9 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Repository("optLogDao")
-public class OptLogDao extends BaseDaoImpl<OptLog, String> {
-
-    //public static final Logger logger = LoggerFactory.getLogger(OptLogDao.class);
+public class RmdbOptLogDao extends BaseDaoImpl<RmdbOptLog, String> {
 
     @Override
     public Map<String, String> getFilterField() {
@@ -35,7 +33,7 @@ public class OptLogDao extends BaseDaoImpl<OptLog, String> {
         return filterField;
     }
 
-    public OptLog getObjectById(String logId) {
+    public RmdbOptLog getObjectById(String logId) {
         return super.getObjectById(logId);
     }
 
@@ -46,7 +44,7 @@ public class OptLogDao extends BaseDaoImpl<OptLog, String> {
 
     @Transactional
     public int delete(String begin) {
-        String delSql = "delete from F_OPT_LOG  where LOG_LEVEL= '0' and  OPT_TIME <= ? ";
+        String delSql = "delete from F_OPT_LOG  where LOG_LEVEL = '0' and  OPT_TIME <= ? ";
         return DatabaseOptUtils.doExecuteSql(this, delSql,new Object[]{begin});
     }
 
