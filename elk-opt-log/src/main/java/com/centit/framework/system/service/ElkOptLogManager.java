@@ -34,26 +34,28 @@ import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
+import java.lang.reflect.Field;
 import java.text.ParseException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service("elkOptLogManager")
 public class ElkOptLogManager implements OperationLogManager {
     public static final Logger logger = LoggerFactory.getLogger(ElkOptLogManager.class);
 
-    @Autowired
-    @Qualifier(value = "elkOptLogIndexer")
+    @Resource
     private ESIndexer elkOptLogIndexer;
 
-    @Autowired
+    @Resource
     private ESSearcher elkOptLogSearcher;
 
-    @Autowired
+    @Resource
     private  ESServerConfig esServerConfig;
 
     @Override
@@ -306,14 +308,10 @@ public class ElkOptLogManager implements OperationLogManager {
 
     //移除非索引字段   比如：pageSize   pageNo  等。
     private void removeField(Class clzz,Map<String,Object> map){
-        if (clzz == null || map == null ) return;
-        List<String> fieldNames = Arrays.stream(clzz.getDeclaredFields()).map(declaredField -> declaredField.getName()).collect(Collectors.toList());
-        Iterator<String> iterator = map.keySet().iterator();
-        while (iterator.hasNext()){
-            String key = iterator.next();
-            if (!fieldNames.contains(key) && !key.startsWith("optTime_")){
-                iterator.remove();
-            }
+        if (clzz == null || map == null ) {
+            return;
         }
+        List<String> fieldNames = Arrays.stream(clzz.getDeclaredFields()).map(Field::getName).collect(Collectors.toList());
+        map.keySet().removeIf(key -> !fieldNames.contains(key) && !key.startsWith("optTime_"));
     }
 }
