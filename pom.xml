@@ -14,6 +14,7 @@
     <modules>
         <module>elk-opt-log</module>
         <module>rmdb-opt-log</module>
+        <!--<module>opt-log-server</module>-->
         <module>opt-log-web</module>
         <module>opt-log-adapter</module>
     </modules>
