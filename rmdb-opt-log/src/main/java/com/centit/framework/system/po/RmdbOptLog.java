@@ -105,6 +105,8 @@ public class RmdbOptLog implements java.io.Serializable {
     @Column(name = "UNIT_CODE")
     private String unitCode;
 
+    @Column(name = "TOP_UNIT")
+    private String topUnit;
     /**
      * 关联id
      */
@@ -136,6 +138,7 @@ public class RmdbOptLog implements java.io.Serializable {
         log.unitCode = other.getUnitCode();
         log.correlationId = other.getCorrelationId();
         log.loginIp = other.getLoginIp();
+        log.topUnit = other.getTopUnit();
         return log;
     }
 
@@ -153,6 +156,7 @@ public class RmdbOptLog implements java.io.Serializable {
         log.setUnitCode(this.unitCode);
         log.setCorrelationId(this.correlationId);
         log.setLoginIp(this.loginIp);
+        log.setTopUnit(this.topUnit);
         return log;
     }
 }
