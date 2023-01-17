@@ -40,7 +40,7 @@ public class OptLogController extends BaseController {
     private OperationLogManager operationLogManager;
 
     @Autowired(required = false)
-    private ESSearcher elkOptLogSearcher;
+    private ESSearcher esObjectSearcher;
 
     /**
      * 查询系统日志
@@ -201,7 +201,7 @@ public class OptLogController extends BaseController {
     @WrapUpResponseBody
     public PageQueryResult<Map<String, Object>> listEs(String map, String value, String queryWord, PageDesc pageDesc) {
         Pair<Long, List<Map<String, Object>>> res =
-            elkOptLogSearcher.search(CollectionsOpt.createHashMap(map, value),queryWord, pageDesc.getPageNo(), pageDesc.getPageSize());
+            esObjectSearcher.search(CollectionsOpt.createHashMap(map, value),queryWord, pageDesc.getPageNo(), pageDesc.getPageSize());
         pageDesc.setTotalRows(NumberBaseOpt.castObjectToInteger(res.getLeft()));
         return PageQueryResult.createResult(res.getRight(), pageDesc);
     }
@@ -211,7 +211,7 @@ public class OptLogController extends BaseController {
     @WrapUpResponseBody
     public PageQueryResult<Map<String, Object>> listEsAll(String queryWord, PageDesc pageDesc) {
         Pair<Long, List<Map<String, Object>>> res =
-            elkOptLogSearcher.search(queryWord, pageDesc.getPageNo(), pageDesc.getPageSize());
+            esObjectSearcher.search(queryWord, pageDesc.getPageNo(), pageDesc.getPageSize());
         pageDesc.setTotalRows(NumberBaseOpt.castObjectToInteger(res.getLeft()));
         return PageQueryResult.createResult(res.getRight(), pageDesc);
     }
