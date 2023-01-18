@@ -1,5 +1,6 @@
 package com.centit.framework.system.po;
 
+import com.alibaba.fastjson.JSON;
 import com.centit.framework.core.dao.DictionaryMap;
 import com.centit.framework.model.basedata.OperationLog;
 import com.centit.support.database.orm.GeneratorTime;
@@ -8,6 +9,7 @@ import com.centit.support.database.orm.ValueGenerator;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import org.apache.commons.lang3.StringUtils;
 import org.hibernate.validator.constraints.Length;
 
 import javax.persistence.*;
@@ -133,8 +135,9 @@ public class RmdbOptLog implements java.io.Serializable {
         }
         log.optMethod = other.getOptMethod();
         log.optContent = other.getOptContent();
-        log.newValue = other.getNewValue();
-        log.oldValue = other.getOldValue();
+        log.newValue = other.getNewValue()!=null? JSON.toJSONString(other.getNewValue()) : null;
+        log.oldValue = other.getOldValue()!=null? JSON.toJSONString(other.getOldValue()) : null;
+
         log.unitCode = other.getUnitCode();
         log.correlationId = other.getCorrelationId();
         log.loginIp = other.getLoginIp();
@@ -151,8 +154,8 @@ public class RmdbOptLog implements java.io.Serializable {
         log.setOptTag(this.optTag);
         log.setOptMethod(this.optMethod);
         log.setOptContent(this.optContent);
-        log.setNewValue(this.newValue);
-        log.setOldValue(this.oldValue);
+        log.setNewValue(StringUtils.isBlank(this.newValue)? null : JSON.parse(this.newValue));
+        log.setOldValue(StringUtils.isBlank(this.oldValue)? null : JSON.parse(this.oldValue));
         log.setUnitCode(this.unitCode);
         log.setCorrelationId(this.correlationId);
         log.setLoginIp(this.loginIp);

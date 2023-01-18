@@ -7,6 +7,7 @@ import com.centit.framework.model.basedata.OperationLog;
 import com.centit.search.annotation.ESField;
 import com.centit.search.annotation.ESType;
 import com.centit.search.document.ESDocument;
+import com.centit.support.algorithm.DatetimeOpt;
 import lombok.Data;
 import org.apache.commons.lang3.StringUtils;
 
@@ -46,6 +47,8 @@ public class ESOperationLog  implements ESDocument , Serializable {
     @ESField(type = "keyword")
     private String unitCode;
 
+    @ESField(type = "keyword")
+    private String topUnit;
     /**
      * 同一个请求同一个 协作号，主要用于调试和跟踪
      */
@@ -81,6 +84,9 @@ public class ESOperationLog  implements ESDocument , Serializable {
      */
     @ESField(type = "keyword")
     private String optTag;
+
+    @ESField(type = "keyword")
+    private String loginIp;
 
     /**
      * 日志内容描述; 也可以是json
@@ -121,8 +127,9 @@ public class ESOperationLog  implements ESDocument , Serializable {
         esLog.setOptTime(log.getOptTime()==null?null:log.getOptTime().getTime());
         esLog.setCorrelationId(log.getCorrelationId());
         esLog.setLogLevel(log.getLogLevel());
-        esLog.setNewValue(log.getNewValue());
-        esLog.setOldValue(log.getOldValue());
+
+        esLog.setNewValue(log.getNewValue()!=null? JSON.toJSONString(log.getNewValue()) : null);
+        esLog.setOldValue(log.getOldValue()!=null? JSON.toJSONString(log.getOldValue()) : null);
         esLog.setOptContent(log.getOptContent());
         esLog.setOptId(log.getOptId());
         esLog.setOptMethod(log.getOptMethod());
@@ -130,6 +137,24 @@ public class ESOperationLog  implements ESDocument , Serializable {
         esLog.setUnitCode(log.getUnitCode());
         esLog.setUserCode(log.getUserCode());
         return esLog;
+    }
+
+    public OperationLog toOperationLog() {
+        OperationLog log = new OperationLog();
+        log.setLogLevel(this.logLevel);
+        log.setUserCode(this.userCode);
+        log.setOptTime(DatetimeOpt.castObjectToDate(this.optTime));
+        log.setOptId(this.optId);
+        log.setOptTag(this.optTag);
+        log.setOptMethod(this.optMethod);
+        log.setOptContent(this.optContent);
+        log.setNewValue(StringUtils.isBlank(this.newValue)? null : JSON.parse(this.newValue));
+        log.setOldValue(StringUtils.isBlank(this.oldValue)? null : JSON.parse(this.oldValue));
+        log.setUnitCode(this.unitCode);
+        log.setCorrelationId(this.correlationId);
+        log.setLoginIp(this.loginIp);
+        log.setTopUnit(this.topUnit);
+        return log;
     }
 }
 
