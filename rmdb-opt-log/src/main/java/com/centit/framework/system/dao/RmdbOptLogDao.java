@@ -30,6 +30,7 @@ public class RmdbOptLogDao extends BaseDaoImpl<RmdbOptLog, String> {
         filterField.put("optTag", CodeBook.EQUAL_HQL_ID);
         filterField.put("userCode", CodeBook.EQUAL_HQL_ID);
         filterField.put("unitCode_in", "UNIT_CODE in (:unitCode_in)");
+        filterField.put("topUnit", CodeBook.EQUAL_HQL_ID);
         return filterField;
     }
 
