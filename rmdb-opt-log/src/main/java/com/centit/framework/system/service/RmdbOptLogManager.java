@@ -5,6 +5,7 @@ import com.centit.framework.core.dao.DictionaryMapUtils;
 import com.centit.framework.model.basedata.OperationLog;
 import com.centit.framework.system.dao.RmdbOptLogDao;
 import com.centit.framework.system.po.RmdbOptLog;
+import com.centit.support.algorithm.CollectionsOpt;
 import com.centit.support.database.utils.PageDesc;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -68,7 +69,8 @@ public class RmdbOptLogManager implements OperationLogManager {
     public JSONArray listOptLogsAsJson(String[] fields,
                                        Map<String, Object> filterMap, PageDesc pageDesc){
         return DictionaryMapUtils.mapJsonArray(
-                    optLogDao.listObjectsPartFieldAsJson( filterMap, fields ,pageDesc),
+                    optLogDao.listObjectsPartFieldByPropertiesAsJson(filterMap,
+                        CollectionsOpt.arrayToList(fields), pageDesc),
                     RmdbOptLog.class);
     }
 
@@ -105,8 +107,8 @@ public class RmdbOptLogManager implements OperationLogManager {
     public List<? extends OperationLog> listOptLog(String optId, Map<String, Object> filterMap, int startPos, int maxRows) {
         filterMap.put("optId", optId);
         List<RmdbOptLog> optlogs = (startPos >= 0 && maxRows > 0) ?
-            optLogDao.listObjects(filterMap, new PageDesc(startPos, maxRows)):
-            optLogDao.listObjects(filterMap);
+            optLogDao.listObjectsByProperties(filterMap, new PageDesc(startPos, maxRows)):
+            optLogDao.listObjectsByProperties(filterMap);
         if(optlogs==null || optlogs.size()==0)
             return null;
         return optlogs.stream().map(RmdbOptLog::toOperationLog).collect(Collectors.toList());
@@ -115,7 +117,7 @@ public class RmdbOptLogManager implements OperationLogManager {
     @Override
     public int countOptLog(String optId, Map<String, Object> filterMap) {
         filterMap.put("optId", optId);
-        return optLogDao.countObject(filterMap);
+        return optLogDao.countObjectByProperties(filterMap);
     }
 
 }
