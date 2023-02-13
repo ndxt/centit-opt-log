@@ -8,6 +8,7 @@ import com.centit.search.annotation.ESField;
 import com.centit.search.annotation.ESType;
 import com.centit.search.document.ESDocument;
 import com.centit.support.algorithm.DatetimeOpt;
+import com.centit.support.algorithm.StringBaseOpt;
 import lombok.Data;
 import org.apache.commons.lang3.StringUtils;
 
@@ -127,9 +128,8 @@ public class ESOperationLog  implements ESDocument , Serializable {
         esLog.setOptTime(log.getOptTime()==null?null:log.getOptTime().getTime());
         esLog.setCorrelationId(log.getCorrelationId());
         esLog.setLogLevel(log.getLogLevel());
-
-        esLog.setNewValue(log.getNewValue()!=null? JSON.toJSONString(log.getNewValue()) : null);
-        esLog.setOldValue(log.getOldValue()!=null? JSON.toJSONString(log.getOldValue()) : null);
+        esLog.setNewValue(StringBaseOpt.castObjectToString(log.getNewValue()));
+        esLog.setOldValue(StringBaseOpt.castObjectToString(log.getOldValue()));
         esLog.setOptContent(log.getOptContent());
         esLog.setOptId(log.getOptId());
         esLog.setOptMethod(log.getOptMethod());
@@ -152,8 +152,8 @@ public class ESOperationLog  implements ESDocument , Serializable {
         log.setOptTag(this.optTag);
         log.setOptMethod(this.optMethod);
         log.setOptContent(this.optContent);
-        log.setNewValue(StringUtils.isBlank(this.newValue)? null : JSON.parse(this.newValue));
-        log.setOldValue(StringUtils.isBlank(this.oldValue)? null : JSON.parse(this.oldValue));
+        log.setNewValue(this.newValue);
+        log.setOldValue(this.oldValue);
         log.setUnitCode(this.unitCode);
         log.setCorrelationId(this.correlationId);
         log.setLoginIp(this.loginIp);

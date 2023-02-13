@@ -3,6 +3,7 @@ package com.centit.framework.system.po;
 import com.alibaba.fastjson.JSON;
 import com.centit.framework.core.dao.DictionaryMap;
 import com.centit.framework.model.basedata.OperationLog;
+import com.centit.support.algorithm.StringBaseOpt;
 import com.centit.support.database.orm.GeneratorTime;
 import com.centit.support.database.orm.GeneratorType;
 import com.centit.support.database.orm.ValueGenerator;
@@ -135,8 +136,8 @@ public class RmdbOptLog implements java.io.Serializable {
         }
         log.optMethod = other.getOptMethod();
         log.optContent = other.getOptContent();
-        log.newValue = other.getNewValue()!=null? JSON.toJSONString(other.getNewValue()) : null;
-        log.oldValue = other.getOldValue()!=null? JSON.toJSONString(other.getOldValue()) : null;
+        log.newValue = StringBaseOpt.castObjectToString(other.getNewValue());
+        log.oldValue = StringBaseOpt.castObjectToString(other.getOldValue());
 
         log.unitCode = other.getUnitCode();
         log.correlationId = other.getCorrelationId();
