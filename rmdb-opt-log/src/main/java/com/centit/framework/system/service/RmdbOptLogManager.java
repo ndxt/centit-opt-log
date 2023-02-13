@@ -97,7 +97,9 @@ public class RmdbOptLogManager implements OperationLogManager {
 
     @Override
     public int countOptLog(String optId, Map<String, Object> filterMap) {
-        filterMap.put("optId", optId);
+        if (!StringBaseOpt.isNvl(optId)){
+            filterMap.put("optId", optId);
+        }
         return optLogDao.countObjectByProperties(filterMap);
     }
 

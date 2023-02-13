@@ -154,8 +154,8 @@ public class RmdbOptLog implements java.io.Serializable {
         log.setOptTag(this.optTag);
         log.setOptMethod(this.optMethod);
         log.setOptContent(this.optContent);
-        log.setNewValue(StringUtils.isBlank(this.newValue)? null : JSON.parse(this.newValue));
-        log.setOldValue(StringUtils.isBlank(this.oldValue)? null : JSON.parse(this.oldValue));
+        log.setNewValue(this.newValue);
+        log.setOldValue(this.oldValue);
         log.setUnitCode(this.unitCode);
         log.setCorrelationId(this.correlationId);
         log.setLoginIp(this.loginIp);
