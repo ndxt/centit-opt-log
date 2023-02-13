@@ -5,13 +5,13 @@ import com.centit.framework.core.dao.DictionaryMapUtils;
 import com.centit.framework.model.basedata.OperationLog;
 import com.centit.framework.system.dao.RmdbOptLogDao;
 import com.centit.framework.system.po.RmdbOptLog;
+import com.centit.support.algorithm.StringBaseOpt;
 import com.centit.support.algorithm.CollectionsOpt;
 import com.centit.support.database.utils.PageDesc;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
 
 import javax.validation.constraints.NotNull;
 import java.util.List;
@@ -27,27 +27,6 @@ public class RmdbOptLogManager implements OperationLogManager {
     @NotNull
     public void setOptLogDao(RmdbOptLogDao optLogDao) {
         this.optLogDao = optLogDao;
-    }
-
-
-    @Override
-    @Transactional(propagation=Propagation.REQUIRED)
-    public void saveOptLog(OperationLog optLog){
-        RmdbOptLog rmdbOptLog = RmdbOptLog.valueOf(optLog);
-        optLogDao.saveNewObject(rmdbOptLog);
-    }
-
-    @Override
-    @Transactional(propagation=Propagation.REQUIRED)
-    public void saveBatchOptLogs(List<OperationLog> optLogs) {
-        if (CollectionUtils.isEmpty(optLogs)) {
-            return;
-        }
-        for (OperationLog optLog : optLogs) {
-            RmdbOptLog rmdbOptLog = RmdbOptLog.valueOf(optLog);
-            optLogDao.saveNewObject(rmdbOptLog);
-        }
-
     }
 
     @Override
@@ -105,7 +84,9 @@ public class RmdbOptLogManager implements OperationLogManager {
 
     @Override
     public List<? extends OperationLog> listOptLog(String optId, Map<String, Object> filterMap, int startPos, int maxRows) {
-        filterMap.put("optId", optId);
+       if (!StringBaseOpt.isNvl(optId)){
+           filterMap.put("optId", optId);
+       }
         List<RmdbOptLog> optlogs = (startPos >= 0 && maxRows > 0) ?
             optLogDao.listObjectsByProperties(filterMap, new PageDesc(startPos, maxRows)):
             optLogDao.listObjectsByProperties(filterMap);

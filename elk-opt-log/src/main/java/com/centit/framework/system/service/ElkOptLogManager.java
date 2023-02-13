@@ -1,6 +1,5 @@
 package com.centit.framework.system.service;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.centit.framework.core.controller.SmartDateFormat;
@@ -12,6 +11,7 @@ import com.centit.search.service.Impl.ESIndexer;
 import com.centit.search.service.Impl.ESSearcher;
 import com.centit.search.service.IndexerSearcherFactory;
 import com.centit.support.algorithm.NumberBaseOpt;
+import com.centit.support.algorithm.StringBaseOpt;
 import com.centit.support.common.ObjectException;
 import com.centit.support.database.utils.PageDesc;
 import lombok.SneakyThrows;
@@ -36,7 +36,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
 import java.lang.reflect.Field;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -47,16 +46,21 @@ import java.util.stream.Collectors;
 
 @Service("elkOptLogManager")
 public class ElkOptLogManager implements OperationLogManager {
+
     public static final Logger logger = LoggerFactory.getLogger(ElkOptLogManager.class);
 
-    @Resource
     private ESIndexer elkOptLogIndexer;
 
-    @Resource
     private ESSearcher elkOptLogSearcher;
 
-    @Resource
-    private  ESServerConfig esServerConfig;
+    private ESServerConfig esServerConfig;
+
+    public ElkOptLogManager(ESServerConfig esServerConfig) {
+        this.esServerConfig =esServerConfig;
+        this.elkOptLogIndexer = IndexerSearcherFactory.obtainIndexer(esServerConfig, ESOperationLog.class);
+        this.elkOptLogSearcher = IndexerSearcherFactory.obtainSearcher(esServerConfig,ESOperationLog.class);
+    }
+
 
     @Override
     public void save(OperationLog operationLog) {
@@ -75,31 +79,16 @@ public class ElkOptLogManager implements OperationLogManager {
         }
     }
 
-    @Override
-    public void saveOptLog(OperationLog optLog) {
-        ESOperationLog esOperationLog = ESOperationLog.fromOperationLog(optLog,null);
-        elkOptLogIndexer.saveNewDocument(esOperationLog);
-    }
-
-    @Override
-    public void saveBatchOptLogs(List<OperationLog> optLogs) {
-        if (optLogs != null){
-            for (OperationLog optLog : optLogs) {
-                elkOptLogIndexer.saveNewDocument(ESOperationLog.fromOperationLog(optLog,null));
-            }
-        }
-    }
-
     @SneakyThrows
     @Override
     public List<? extends OperationLog> listOptLog(String optId, Map<String, Object> filterMap, int startPos, int maxRows){
         BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
-        publicbuild(filterMap,boolQueryBuilder);
+        publicbuild(optId,filterMap,boolQueryBuilder);
         Pair<Long, List<Map<String, Object>>> longListPair = elkOptLogSearcher.esSearch(boolQueryBuilder, startPos, maxRows);
         List<OperationLog> operationLogList = new ArrayList<>();
         if (longListPair != null){
             for (Map<String, Object> objectMap : longListPair.getValue()) {
-                OperationLog operationLog = JSON.parseObject(JSON.toJSONString(objectMap), OperationLog.class);
+                OperationLog operationLog = JSONObject.parseObject(StringBaseOpt.castObjectToString(objectMap),OperationLog.class);
                 operationLogList.add(operationLog);
             }
         }
@@ -118,7 +107,7 @@ public class ElkOptLogManager implements OperationLogManager {
             CountRequest countRequest = new CountRequest(indexName);
             SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
             BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
-            publicbuild(filter,boolQueryBuilder);
+            publicbuild(optId,filter,boolQueryBuilder);
             searchSourceBuilder.query(boolQueryBuilder);
             countRequest.source(searchSourceBuilder);
             restHighLevelClient = restHighLevelClientGenericObjectPool.borrowObject();
@@ -190,7 +179,7 @@ public class ElkOptLogManager implements OperationLogManager {
             if (fields != null && fields.length > 0){
                 searchSourceBuilder.fetchSource(fields,null);
             }
-            publicbuild(filterMap,boolQueryBuilder);
+            publicbuild(null,filterMap,boolQueryBuilder);
             searchSourceBuilder.query(boolQueryBuilder);
             searchSourceBuilder.explain(true);
             searchSourceBuilder.from((pageDesc.getPageNo()>1)?(pageDesc.getPageNo()-1)* pageDesc.getPageSize():0);
@@ -210,7 +199,7 @@ public class ElkOptLogManager implements OperationLogManager {
             SearchSourceBuilder sourceBuilderCount = new SearchSourceBuilder();
             CountRequest countRequest = new CountRequest(indexName);
             BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
-            publicbuild(filterMap,boolQuery);
+            publicbuild(null,filterMap,boolQuery);
             sourceBuilderCount.query(boolQuery);
             countRequest.source(sourceBuilderCount);
             CountResponse countResponse = restHighLevelClient.count(countRequest, RequestOptions.DEFAULT);
@@ -227,8 +216,8 @@ public class ElkOptLogManager implements OperationLogManager {
     }
 
     @Override
-    public int delete(String begin) {
-        if(StringUtils.isBlank(begin)) {
+    public int delete(String beginDate) {
+        if(StringUtils.isBlank(beginDate)) {
             throw new ObjectException("请指定具体时间！");
         }
         GenericObjectPool<RestHighLevelClient> restHighLevelClientGenericObjectPool = IndexerSearcherFactory.obtainclientPool(esServerConfig);
@@ -237,7 +226,7 @@ public class ElkOptLogManager implements OperationLogManager {
             restHighLevelClient = restHighLevelClientGenericObjectPool.borrowObject();
             String indexName = DocumentUtils.obtainDocumentIndexName(ESOperationLog.class);
             DeleteByQueryRequest delete = new DeleteByQueryRequest(indexName);
-            Long date = new SmartDateFormat("yyyy-MM-dd HH:mm:ss").parse(begin).getTime();
+            Long date = new SmartDateFormat("yyyy-MM-dd HH:mm:ss").parse(beginDate).getTime();
             RangeQueryBuilder optTime = QueryBuilders.rangeQuery("optTime").lte(date);
             delete.setQuery(optTime);
             BulkByScrollResponse bulkByScrollResponse = restHighLevelClient.deleteByQuery(delete, RequestOptions.DEFAULT);
@@ -266,7 +255,10 @@ public class ElkOptLogManager implements OperationLogManager {
         }
     }
 
-    private  void publicbuild(Map<String, Object> filter, BoolQueryBuilder boolQueryBuilder) throws ParseException {
+    private  void publicbuild(String optId,Map<String, Object> filter, BoolQueryBuilder boolQueryBuilder) throws ParseException {
+        if (StringUtils.isNotBlank(optId)){
+            boolQueryBuilder.must(QueryBuilders.termQuery("optId",optId));
+        }
         removeField(ESOperationLog.class,filter);
         if (filter == null ||  filter.size() == 0){
             boolQueryBuilder.must(QueryBuilders.matchAllQuery());
@@ -274,10 +266,14 @@ public class ElkOptLogManager implements OperationLogManager {
             for (Map.Entry<String, Object> entry : filter.entrySet()) {
                 String key = entry.getKey();
                 Object value = entry.getValue();
-                if (key.startsWith("optTime")){
-                    buildQuery(key,"optTime",value,boolQueryBuilder);
-                }else {
-                    boolQueryBuilder.must(QueryBuilders.matchQuery(key,value));
+                if (StringUtils.isNotBlank(key) && value != null){
+                    if (key.startsWith("optTime")){
+                        buildQuery(key,"optTime",value,boolQueryBuilder);
+                    }else if ("optContent".equals(key)){
+                        boolQueryBuilder.must(QueryBuilders.matchQuery(key,value));
+                    }else {
+                        boolQueryBuilder.must(QueryBuilders.termQuery(key,value));
+                    }
                 }
             }
         }

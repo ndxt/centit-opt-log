@@ -44,9 +44,9 @@ public class RmdbOptLogDao extends BaseDaoImpl<RmdbOptLog, String> {
     }
 
     @Transactional
-    public int delete(String begin) {
+    public int delete(String beginDate) {
         String delSql = "delete from F_OPT_LOG  where LOG_LEVEL = '0' and  OPT_TIME <= ? ";
-        return DatabaseOptUtils.doExecuteSql(this, delSql,new Object[]{begin});
+        return DatabaseOptUtils.doExecuteSql(this, delSql,new Object[]{beginDate});
     }
 
 }

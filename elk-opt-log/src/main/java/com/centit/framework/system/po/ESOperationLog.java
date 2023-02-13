@@ -136,6 +136,10 @@ public class ESOperationLog  implements ESDocument , Serializable {
         esLog.setOptTag(log.getOptTag());
         esLog.setUnitCode(log.getUnitCode());
         esLog.setUserCode(log.getUserCode());
+        esLog.setOsId(log.getOsId());
+        esLog.setTopUnit(log.getTopUnit());
+        esLog.setLoginIp(log.getLoginIp());
+        esLog.setCorrelationId(log.getCorrelationId());
         return esLog;
     }
 

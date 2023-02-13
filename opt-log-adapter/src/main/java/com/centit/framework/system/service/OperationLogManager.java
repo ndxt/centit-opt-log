@@ -5,15 +5,9 @@ import com.centit.framework.model.adapter.OperationLogWriter;
 import com.centit.framework.model.basedata.OperationLog;
 import com.centit.support.database.utils.PageDesc;
 
-import java.util.List;
 import java.util.Map;
 
 public interface OperationLogManager extends OperationLogWriter {
-
-    void saveOptLog(OperationLog optLog);
-
-    //批量保存
-    void saveBatchOptLogs(List<OperationLog> optLogs);
 
     OperationLog getOptLogById(String logId);
 
@@ -21,8 +15,12 @@ public interface OperationLogManager extends OperationLogWriter {
 
     void deleteOptLogById(String logId);
 
-    //清理此日期之前的日志信息
-    int delete(String begin);
+    /**
+     * 清理此日期之前的日志信息
+     * @param beginDate 起始时间
+     * @return
+     */
+    int delete(String beginDate);
 
     void deleteMany(String[] logIds);
 }
