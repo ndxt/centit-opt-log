@@ -44,9 +44,8 @@ public class OptLogController extends BaseController {
     @Qualifier(value = "elkOptLogSearcher")
     private ESSearcher elkOptLogSearcher;
 
-    /**
+    /*
      * 查询系统日志
-     *
      * @param field    需要显示的字段
      * @param pageDesc 分页信息
      * @param request  HttpServletRequest
@@ -72,9 +71,8 @@ public class OptLogController extends BaseController {
         return resData;
     }
 
-    /**
+    /*
      * 查询单条日志
-     *
      * @param logId logId
      */
     @ApiOperation(value = "查询单条日志", notes = "根据日志id查询单条日志。")
@@ -91,9 +89,8 @@ public class OptLogController extends BaseController {
         return ResponseData.makeResponseData(DictionaryMapUtils.objectToJSON(operationLog));
     }
 
-    /**
+    /*
      * 删除单条系统日志
-     *
      * @param logId logId
      */
     @ApiOperation(value = "删除单条系统日志", notes = "根据日志id删除单条日志。")
@@ -108,9 +105,8 @@ public class OptLogController extends BaseController {
         return ResponseData.successResponse;
     }
 
-    /**
+    /*
      * 删除多条系统日志
-     *
      * @param logIds logIds[]
      */
     @ApiOperation(value = "删除多条系统日志", notes = "删除多条系统日志。")
@@ -125,9 +121,8 @@ public class OptLogController extends BaseController {
         return ResponseData.successResponse;
     }
 
-    /**
+    /*
      * 删除某时段之前的系统日志
-     *
      * @param beginDate Date
      */
     @ApiOperation(value = "删除某时段之前的系统日志", notes = "删除某时段之前的系统日志。")
@@ -190,8 +185,7 @@ public class OptLogController extends BaseController {
         return operationLogManager.countOptLog(optId, searchColumn);
     }
 
-    /**
-     *
+    /*
      * @param map   字段名
      * @param value  字段值  （分词后值）
      * @param queryWord  在根据前面字段和字段值过滤后再进行结果的筛选

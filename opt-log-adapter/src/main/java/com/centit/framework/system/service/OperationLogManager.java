@@ -18,7 +18,7 @@ public interface OperationLogManager extends OperationLogWriter {
     /**
      * 清理此日期之前的日志信息
      * @param beginDate 起始时间
-     * @return
+     * @return 数据条数
      */
     int delete(String beginDate);
 
