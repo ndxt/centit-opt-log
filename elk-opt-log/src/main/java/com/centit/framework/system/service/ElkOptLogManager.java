@@ -1,7 +1,7 @@
 package com.centit.framework.system.service;
 
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson2.JSONArray;
+import com.alibaba.fastjson2.JSONObject;
 import com.centit.framework.core.controller.SmartDateFormat;
 import com.centit.framework.model.basedata.OperationLog;
 import com.centit.framework.system.po.ESOperationLog;
