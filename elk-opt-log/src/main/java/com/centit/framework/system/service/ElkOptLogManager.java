@@ -1,7 +1,9 @@
 package com.centit.framework.system.service;
 
+import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
+import com.centit.framework.components.CodeRepositoryUtil;
 import com.centit.framework.core.controller.SmartDateFormat;
 import com.centit.framework.model.basedata.OperationLog;
 import com.centit.framework.system.po.ESOperationLog;
@@ -193,7 +195,9 @@ public class ElkOptLogManager implements OperationLogManager {
                 String sourceAsString = hit.getSourceAsString();
                 OperationLog esOperationLog = JSONObject.parseObject(sourceAsString, OperationLog.class);
                 esOperationLog.setLogId(hit.getId());
-                result.add(esOperationLog);
+                JSONObject jsonObject= (JSONObject) JSON.toJSON(esOperationLog);
+                jsonObject.put("userName", CodeRepositoryUtil.getValue("userCode",esOperationLog.getUserCode(),"all","zh_CN"));
+                result.add(jsonObject);
             }
             //查询总条数
             SearchSourceBuilder sourceBuilderCount = new SearchSourceBuilder();
