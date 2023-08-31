@@ -164,7 +164,7 @@ public class OptLogController extends BaseController {
     })
     @GetMapping("/query/{optId}")
     @WrapUpResponseBody
-    public List<? extends OperationLog> queryOptlog(@PathVariable String optId,
+    public List<OperationLog> queryOptlog(@PathVariable String optId,
                                                      Integer startPos,
                                                      Integer maxSize,
                                                      HttpServletRequest request) {

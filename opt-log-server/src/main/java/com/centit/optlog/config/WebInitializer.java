@@ -2,6 +2,7 @@ package com.centit.optlog.config;
 
 import com.centit.framework.config.SystemSpringMvcConfig;
 import com.centit.framework.config.WebConfig;
+import com.centit.support.json.JSONOpt;
 import org.springframework.web.WebApplicationInitializer;
 
 import javax.servlet.ServletContext;
@@ -15,6 +16,7 @@ public class WebInitializer implements WebApplicationInitializer {
 
     @Override
     public void onStartup(ServletContext servletContext) throws ServletException {
+        JSONOpt.fastjsonGlobalConfig();
 
         String [] servletUrlPatterns = {"/system/*","/elk/*"};
         WebConfig.registerSpringConfig(servletContext, ServiceConfig.class);

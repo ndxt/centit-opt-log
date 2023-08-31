@@ -83,7 +83,7 @@ public class ElkOptLogManager implements OperationLogManager {
 
     @SneakyThrows
     @Override
-    public List<? extends OperationLog> listOptLog(String optId, Map<String, Object> filterMap, int startPos, int maxRows){
+    public List<OperationLog> listOptLog(String optId, Map<String, Object> filterMap, int startPos, int maxRows){
         BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
         publicbuild(optId,filterMap,boolQueryBuilder);
         Pair<Long, List<Map<String, Object>>> longListPair = elkOptLogSearcher.esSearch(boolQueryBuilder, startPos, maxRows);

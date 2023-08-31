@@ -83,10 +83,10 @@ public class RmdbOptLogManager implements OperationLogManager {
     }
 
     @Override
-    public List<? extends OperationLog> listOptLog(String optId, Map<String, Object> filterMap, int startPos, int maxRows) {
-       if (!StringBaseOpt.isNvl(optId)){
-           filterMap.put("optId", optId);
-       }
+    public List<OperationLog> listOptLog(String optId, Map<String, Object> filterMap, int startPos, int maxRows) {
+        if (!StringBaseOpt.isNvl(optId)){
+            filterMap.put("optId", optId);
+        }
         List<RmdbOptLog> optlogs = (startPos >= 0 && maxRows > 0) ?
             optLogDao.listObjectsByProperties(filterMap, new PageDesc(startPos, maxRows)):
             optLogDao.listObjectsByProperties(filterMap);

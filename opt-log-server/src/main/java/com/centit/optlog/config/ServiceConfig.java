@@ -1,6 +1,5 @@
 package com.centit.optlog.config;
 
-import com.centit.framework.config.InitialWebRuntimeEnvironment;
 import com.centit.framework.jdbc.config.JdbcConfig;
 import com.centit.framework.system.po.ESOperationLog;
 import com.centit.search.service.ESServerConfig;
@@ -23,14 +22,6 @@ import org.springframework.context.annotation.*;
 @EnableAspectJAutoProxy(proxyTargetClass = true)
 public class ServiceConfig {
     private static Logger log = LoggerFactory.getLogger(ServiceConfig.class);
-
-    @Bean
-    @Lazy(value = false)
-    public InitialWebRuntimeEnvironment initialEnvironment() {
-        InitialWebRuntimeEnvironment initialWebRuntimeEnvironment = new InitialWebRuntimeEnvironment();
-        initialWebRuntimeEnvironment.initialEnvironment();
-        return initialWebRuntimeEnvironment;
-    }
 
     @Bean("esServerConfig")
     public ESServerConfig esServerConfig(){
