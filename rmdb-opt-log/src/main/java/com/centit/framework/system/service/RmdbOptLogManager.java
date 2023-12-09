@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-@Service("operationLogManager")
+@Service("optLogManager")
 public class RmdbOptLogManager implements OperationLogManager {
 
     private RmdbOptLogDao optLogDao;

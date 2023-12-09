@@ -38,7 +38,7 @@ public class OptLogController extends BaseController {
 
     @Autowired
     @NotNull
-    private OperationLogManager operationLogManager;
+    private OperationLogManager optLogManager;
 
     @Autowired(required = false)
     @Qualifier(value = "elkOptLogSearcher")
@@ -63,7 +63,7 @@ public class OptLogController extends BaseController {
     @WrapUpResponseBody
     public ResponseMapData list(String[] field, PageDesc pageDesc, HttpServletRequest request) {
         Map<String, Object> searchColumn = BaseController.collectRequestParameters(request);
-        JSONArray jsonArray = operationLogManager.listOptLogsAsJson(field, searchColumn, pageDesc);
+        JSONArray jsonArray = optLogManager.listOptLogsAsJson(field, searchColumn, pageDesc);
         ResponseMapData resData = new ResponseMapData();
         resData.addResponseData(PageQueryResult.OBJECT_LIST_LABEL, jsonArray);
         resData.addResponseData(PageQueryResult.PAGE_INFO_LABEL, pageDesc);
@@ -82,7 +82,7 @@ public class OptLogController extends BaseController {
     @RequestMapping(value = "/{logId}", method = {RequestMethod.GET})
     @WrapUpResponseBody
     public ResponseData getOptLogById(@PathVariable String logId) {
-        OperationLog operationLog = operationLogManager.getOptLogById(logId);
+        OperationLog operationLog = optLogManager.getOptLogById(logId);
         if (null == operationLog) {
             return ResponseData.makeErrorMessage("日志信息不存在");
         }
@@ -101,7 +101,7 @@ public class OptLogController extends BaseController {
     @RecordOperationLog(content = "操作IP地址:{loginIp},用户{loginUser.userName}删除日志")
     @WrapUpResponseBody
     public ResponseData deleteOne(@PathVariable String logId) {
-        operationLogManager.deleteOptLogById(logId);
+        optLogManager.deleteOptLogById(logId);
         return ResponseData.successResponse;
     }
 
@@ -117,7 +117,7 @@ public class OptLogController extends BaseController {
     @RecordOperationLog(content = "操作IP地址:{loginIp},用户{loginUser.userName}删除日志")
     @WrapUpResponseBody
     public ResponseData deleteMany(String[] logIds) {
-        operationLogManager.deleteMany(logIds);
+        optLogManager.deleteMany(logIds);
         return ResponseData.successResponse;
     }
 
@@ -133,21 +133,21 @@ public class OptLogController extends BaseController {
         if(StringBaseOpt.isNvl(beginDate)){
             return ResponseData.makeErrorMessage("请指定具体的删除时间范围！");
         }
-        int delete = operationLogManager.delete(beginDate);
+        int delete = optLogManager.delete(beginDate);
         return ResponseData.makeSuccessResponse(StringBaseOpt.castObjectToString(delete));
     }
     //暂时把saveOne在swagger中暴露出来
     @RequestMapping(method = RequestMethod.POST)
     @WrapUpResponseBody
     public void saveOne(@RequestBody OperationLog optLog) {
-        operationLogManager.save(optLog);
+        optLogManager.save(optLog);
     }
 
     @RequestMapping(value = "/saveMany",method = RequestMethod.POST)
     @WrapUpResponseBody
     public void saveMany(@RequestBody String optLogJsonArray) {
         List<OperationLog> optlogs = JSONArray.parseArray(optLogJsonArray, OperationLog.class);
-        operationLogManager.save(optlogs);
+        optLogManager.save(optlogs);
     }
 
     @ApiOperation(value = "按应用查询日志", notes = "按应用查询日志。")
@@ -171,7 +171,7 @@ public class OptLogController extends BaseController {
         Map<String, Object> searchColumn = BaseController.collectRequestParameters(request);
         searchColumn.remove("startPos");
         searchColumn.remove("maxSize");
-        return operationLogManager.listOptLog(optId, searchColumn, startPos, maxSize);
+        return optLogManager.listOptLog(optId, searchColumn, startPos, maxSize);
     }
 
     @ApiOperation(value = "按应用查询日志条数", notes = "按应用查询日志条数。")
@@ -182,7 +182,7 @@ public class OptLogController extends BaseController {
     @WrapUpResponseBody
     public Integer countOptlog(String optId, HttpServletRequest request) {
         Map<String, Object> searchColumn = BaseController.collectRequestParameters(request);
-        return operationLogManager.countOptLog(optId, searchColumn);
+        return optLogManager.countOptLog(optId, searchColumn);
     }
 
     /*
