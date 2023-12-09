@@ -46,7 +46,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-@Service("elkOptLogManager")
+@Service("operationLogManager")
 public class ElkOptLogManager implements OperationLogManager {
 
     public static final Logger logger = LoggerFactory.getLogger(ElkOptLogManager.class);
