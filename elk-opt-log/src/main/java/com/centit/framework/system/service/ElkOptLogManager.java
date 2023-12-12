@@ -36,6 +36,7 @@ import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.lang.reflect.Field;
@@ -57,7 +58,8 @@ public class ElkOptLogManager implements OperationLogManager {
 
     private ESServerConfig esServerConfig;
 
-    public ElkOptLogManager(ESServerConfig esServerConfig) {
+    @Autowired
+    public ElkOptLogManager(@Autowired ESServerConfig esServerConfig) {
         this.esServerConfig =esServerConfig;
         this.elkOptLogIndexer = IndexerSearcherFactory.obtainIndexer(esServerConfig, ESOperationLog.class);
         this.elkOptLogSearcher = IndexerSearcherFactory.obtainSearcher(esServerConfig,ESOperationLog.class);
