@@ -12,20 +12,16 @@ import com.centit.support.algorithm.StringBaseOpt;
 import lombok.Data;
 import org.apache.commons.lang3.StringUtils;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
 import java.io.Serializable;
 import java.util.UUID;
 
 @Data
-@Entity
 @ESType(indexName = "esoperationlog")
 public class ESOperationLog  implements ESDocument , Serializable {
 
     private static final long serialVersionUID =  1L;
 
     //es id
-    @Id
     @ESField(type = "keyword")
     private  String  logId;
 

@@ -1,6 +1,5 @@
 package com.centit.framework.system.po;
 
-import com.alibaba.fastjson2.JSON;
 import com.centit.framework.core.dao.DictionaryMap;
 import com.centit.framework.model.basedata.OperationLog;
 import com.centit.support.algorithm.StringBaseOpt;
@@ -10,7 +9,6 @@ import com.centit.support.database.orm.ValueGenerator;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
-import org.apache.commons.lang3.StringUtils;
 import org.hibernate.validator.constraints.Length;
 
 import javax.persistence.*;
