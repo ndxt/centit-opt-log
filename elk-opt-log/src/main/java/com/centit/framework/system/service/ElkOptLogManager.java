@@ -68,6 +68,9 @@ public class ElkOptLogManager implements OperationLogManager {
 
     @Override
     public void save(OperationLog operationLog) {
+        //不保存没有租户信息的日志，这个应该是错误
+        if(StringUtils.isBlank(operationLog.getTopUnit()))
+            return;
         ESOperationLog esOperationLog = ESOperationLog.fromOperationLog(operationLog,null);
         if (elkOptLogIndexer.saveNewDocument(esOperationLog) == null) {
             throw new ObjectException(500, "elasticsearch操作失败");

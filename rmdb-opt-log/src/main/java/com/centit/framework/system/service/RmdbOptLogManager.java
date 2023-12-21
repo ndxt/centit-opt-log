@@ -8,6 +8,7 @@ import com.centit.framework.system.po.RmdbOptLog;
 import com.centit.support.algorithm.StringBaseOpt;
 import com.centit.support.algorithm.CollectionsOpt;
 import com.centit.support.database.utils.PageDesc;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -70,14 +71,19 @@ public class RmdbOptLogManager implements OperationLogManager {
     @Override
     @Transactional(propagation=Propagation.REQUIRED)
     public void save(final OperationLog optLog) {
-        RmdbOptLog optlog = RmdbOptLog.valueOf(optLog);
-        optLogDao.saveNewObject(optlog);
+        //不保存没有租户信息的日志，这个应该是错误
+        if(StringUtils.isBlank(optLog.getTopUnit()))
+            return;
+        optLogDao.saveNewObject(RmdbOptLog.valueOf(optLog));
     }
 
     @Override
     @Transactional(propagation=Propagation.REQUIRED)
     public void save(List<OperationLog> optLogs) {
         for(OperationLog optlog : optLogs){
+            //不保存没有租户信息的日志，这个应该是错误
+            if(StringUtils.isBlank(optlog.getTopUnit()))
+                continue;
             optLogDao.saveNewObject(RmdbOptLog.valueOf(optlog));
         }
     }
