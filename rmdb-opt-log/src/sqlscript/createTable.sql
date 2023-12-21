@@ -13,6 +13,7 @@ create table F_OPT_LOG
     OPT_TAG        VARCHAR(200),
     CORRELATION_ID VARCHAR(32),
     UNIT_CODE      VARCHAR(32),
+    TOP_UNIT      VARCHAR(32),
     OPT_CONTENT    VARCHAR(1000) NOT NULL,
     NEW_VALUE      CLOB, -- text,
     OLD_VALUE      CLOB, -- text,
