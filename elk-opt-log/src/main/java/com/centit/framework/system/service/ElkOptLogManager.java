@@ -277,11 +277,13 @@ public class ElkOptLogManager implements OperationLogManager {
                 Object value = entry.getValue();
                 if (StringUtils.isNotBlank(key) && value != null){
                     if (key.startsWith("optTime")){
-                        buildQuery(key,"optTime",value,boolQueryBuilder);
+                        buildQuery(key,"optTime", value, boolQueryBuilder);
                     }else if ("optContent".equals(key)){
-                        boolQueryBuilder.must(QueryBuilders.matchQuery(key,value));
+                        boolQueryBuilder.filter(QueryBuilders.multiMatchQuery(
+                            value, "optContent","newValue","oldValue"));
+                        //boolQueryBuilder.must(QueryBuilders.matchQuery(key,value));
                     }else {
-                        boolQueryBuilder.must(QueryBuilders.termQuery(key,value));
+                        boolQueryBuilder.must(QueryBuilders.termQuery(key, value));
                     }
                 }
             }
