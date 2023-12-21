@@ -283,7 +283,8 @@ public class ElkOptLogManager implements OperationLogManager {
                             value, "optContent","newValue","oldValue"));
                         //boolQueryBuilder.must(QueryBuilders.matchQuery(key,value));
                     }else {
-                        boolQueryBuilder.must(QueryBuilders.termQuery(key, value));
+                        //这个字段的类型不知道为什么是text所以需要添加 .keyword
+                        boolQueryBuilder.must(QueryBuilders.termQuery(key+".keyword", value));
                     }
                 }
             }
