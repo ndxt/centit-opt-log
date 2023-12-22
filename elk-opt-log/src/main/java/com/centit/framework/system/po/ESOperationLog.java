@@ -16,7 +16,7 @@ import java.io.Serializable;
 import java.util.UUID;
 
 @Data
-@ESType(indexName = "esoperationlog", shards = 5)
+@ESType(indexName = "operationlog", shards = 5)
 public class ESOperationLog  implements ESDocument , Serializable {
 
     private static final long serialVersionUID =  1L;
