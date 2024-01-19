@@ -4,13 +4,15 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <artifactId>framework-snapshot-dependencies</artifactId>
         <groupId>com.centit.framework</groupId>
-        <version>5.4-SNAPSHOT</version>
+        <artifactId>centit-project-bulid-parent</artifactId>
+        <version>5.5-SNAPSHOT</version>
     </parent>
+
     <groupId>com.centit.product</groupId>
     <artifactId>centit-opt-log</artifactId>
-    <version>5.4-SNAPSHOT</version>
+    <version>${revision}</version>
+
     <modules>
         <module>elk-opt-log</module>
         <module>rmdb-opt-log</module>
