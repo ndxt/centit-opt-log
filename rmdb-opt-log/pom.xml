@@ -69,8 +69,8 @@
         <!--jdbc 测试中提示com.mysql.drive打不开，所以后来重新添加了依赖mysql-connector-java-->
         <!-- https://mvnrepository.com/artifact/mysql/mysql-connector-java -->
         <dependency>
-            <groupId>mysql</groupId>
-            <artifactId>mysql-connector-java</artifactId>
+            <groupId>com.mysql</groupId>
+            <artifactId>mysql-connector-j</artifactId>
         </dependency>
 
         <!-- server runtime library -->
