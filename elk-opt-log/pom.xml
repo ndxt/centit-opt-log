@@ -44,12 +44,6 @@
         </dependency>
 
         <dependency>
-            <groupId>com.centit.framework</groupId>
-            <artifactId>centit-persistence-extend</artifactId>
-            <version>${revision}</version>
-        </dependency>
-
-        <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <scope>provided</scope>

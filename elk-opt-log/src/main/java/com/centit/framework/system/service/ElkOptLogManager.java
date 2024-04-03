@@ -15,7 +15,6 @@ import com.centit.search.service.IndexerSearcherFactory;
 import com.centit.support.algorithm.NumberBaseOpt;
 import com.centit.support.algorithm.StringBaseOpt;
 import com.centit.support.common.ObjectException;
-import com.centit.support.compiler.Lexer;
 import com.centit.support.database.jsonmaptable.GeneralJsonObjectDao;
 import com.centit.support.database.utils.PageDesc;
 import lombok.SneakyThrows;
@@ -70,7 +69,6 @@ public class ElkOptLogManager implements OperationLogManager {
         this.elkOptLogSearcher = IndexerSearcherFactory.obtainSearcher(esServerConfig, ESOperationLog.class);
     }
 
-
     @Override
     public void save(OperationLog operationLog) {
         //不保存没有租户信息的日志，这个应该是错误
@@ -96,7 +94,7 @@ public class ElkOptLogManager implements OperationLogManager {
     public List<OperationLog> listOptLog(String optId, Map<String, Object> filterMap, int startPos, int maxRows) {
         BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
         List<SortBuilder<?>> sortBuilders = new ArrayList<>();
-        publicOrderSql(sortBuilders,filterMap);
+        ESSearcher.mapSortBuilder(sortBuilders,filterMap);
         publicbuild(optId, filterMap, boolQueryBuilder);
         Pair<Long, List<Map<String, Object>>> longListPair = elkOptLogSearcher.esSearch(boolQueryBuilder, sortBuilders, startPos, maxRows);
         List<OperationLog> operationLogList = new ArrayList<>();
@@ -107,51 +105,6 @@ public class ElkOptLogManager implements OperationLogManager {
             }
         }
         return operationLogList;
-    }
-
-    private void publicOrderSql(List<SortBuilder<?>> sortBuilders, Map<String, Object> filterMap) {
-        String selfOrderBy = StringBaseOpt.objectToString(filterMap.get(GeneralJsonObjectDao.SELF_ORDER_BY));
-        if (StringUtils.isNotBlank(selfOrderBy)) {
-            Lexer lexer = new Lexer(selfOrderBy, Lexer.LANG_TYPE_SQL);
-            String aWord = lexer.getAWord();
-            StringBuilder orderBuilder = new StringBuilder();
-            while (StringUtils.isNotBlank(aWord)) {
-                if (StringUtils.equalsAnyIgnoreCase(aWord,
-                    ",", "desc", "asc")) {
-                    orderBuilder.append(aWord);
-                } else {
-                    orderBuilder.append(aWord);
-                }
-                orderBuilder.append(" ");
-                aWord = lexer.getAWord();
-            }
-            String[] fields = orderBuilder.toString().split(",");
-            for (String field : fields) {
-                SortBuilder sortBuilder;
-                String[] field2 = field.split(" ");
-                if (field2.length > 1) {
-                    if (field2[1].equalsIgnoreCase("desc")) {
-                        sortBuilder = SortBuilders.fieldSort(field2[0]).order(SortOrder.DESC);
-                    } else {
-                        sortBuilder = SortBuilders.fieldSort(field2[0]).order(SortOrder.ASC);
-                    }
-                } else {
-                    sortBuilder = SortBuilders.fieldSort(field2[0]).order(SortOrder.ASC);
-                }
-                sortBuilders.add(sortBuilder);
-            }
-        }
-        String sortField = StringBaseOpt.objectToString(filterMap.get(GeneralJsonObjectDao.TABLE_SORT_FIELD));
-        if (StringUtils.isNotBlank(sortField)) {
-            SortBuilder sortBuilder;
-            String sOrder = StringBaseOpt.objectToString(filterMap.get(GeneralJsonObjectDao.TABLE_SORT_ORDER));
-            if ("desc".equalsIgnoreCase(sOrder)) {
-                sortBuilder = SortBuilders.fieldSort(sortField).order(SortOrder.DESC);
-            } else {
-                sortBuilder = SortBuilders.fieldSort(sortField).order(SortOrder.ASC);
-            }
-            sortBuilders.add(sortBuilder);
-        }
     }
 
     /*
@@ -239,7 +192,7 @@ public class ElkOptLogManager implements OperationLogManager {
                 searchSourceBuilder.fetchSource(fields, null);
             }
             List<SortBuilder<?>> sortBuilders = new ArrayList<>();
-            publicOrderSql(sortBuilders,filterMap);
+            ESSearcher.mapSortBuilder(sortBuilders,filterMap);
             publicbuild(null, filterMap, boolQueryBuilder);
             searchSourceBuilder.query(boolQueryBuilder);
             searchSourceBuilder.sort(sortBuilders);
