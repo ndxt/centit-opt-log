@@ -15,6 +15,8 @@ import com.centit.search.service.IndexerSearcherFactory;
 import com.centit.support.algorithm.NumberBaseOpt;
 import com.centit.support.algorithm.StringBaseOpt;
 import com.centit.support.common.ObjectException;
+import com.centit.support.compiler.Lexer;
+import com.centit.support.database.jsonmaptable.GeneralJsonObjectDao;
 import com.centit.support.database.utils.PageDesc;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
@@ -34,6 +36,9 @@ import org.elasticsearch.index.reindex.BulkByScrollResponse;
 import org.elasticsearch.index.reindex.DeleteByQueryRequest;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
+import org.elasticsearch.search.sort.SortBuilder;
+import org.elasticsearch.search.sort.SortBuilders;
+import org.elasticsearch.search.sort.SortOrder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,18 +65,18 @@ public class ElkOptLogManager implements OperationLogManager {
 
     @Autowired
     public ElkOptLogManager(@Autowired ESServerConfig esServerConfig) {
-        this.esServerConfig =esServerConfig;
+        this.esServerConfig = esServerConfig;
         this.elkOptLogIndexer = IndexerSearcherFactory.obtainIndexer(esServerConfig, ESOperationLog.class);
-        this.elkOptLogSearcher = IndexerSearcherFactory.obtainSearcher(esServerConfig,ESOperationLog.class);
+        this.elkOptLogSearcher = IndexerSearcherFactory.obtainSearcher(esServerConfig, ESOperationLog.class);
     }
 
 
     @Override
     public void save(OperationLog operationLog) {
         //不保存没有租户信息的日志，这个应该是错误
-        if(StringUtils.isBlank(operationLog.getTopUnit()))
+        if (StringUtils.isBlank(operationLog.getTopUnit()))
             return;
-        ESOperationLog esOperationLog = ESOperationLog.fromOperationLog(operationLog,null);
+        ESOperationLog esOperationLog = ESOperationLog.fromOperationLog(operationLog, null);
         if (elkOptLogIndexer.saveNewDocument(esOperationLog) == null) {
             throw new ObjectException(500, "elasticsearch操作失败");
         }
@@ -79,7 +84,7 @@ public class ElkOptLogManager implements OperationLogManager {
 
     @Override
     public void save(List<OperationLog> optLogs) {
-        if (optLogs != null && optLogs.size() > 0){
+        if (optLogs != null && optLogs.size() > 0) {
             for (OperationLog optLog : optLogs) {
                 save(optLog);
             }
@@ -88,42 +93,89 @@ public class ElkOptLogManager implements OperationLogManager {
 
     @SneakyThrows
     @Override
-    public List<OperationLog> listOptLog(String optId, Map<String, Object> filterMap, int startPos, int maxRows){
+    public List<OperationLog> listOptLog(String optId, Map<String, Object> filterMap, int startPos, int maxRows) {
         BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
-        publicbuild(optId,filterMap,boolQueryBuilder);
-        Pair<Long, List<Map<String, Object>>> longListPair = elkOptLogSearcher.esSearch(boolQueryBuilder, startPos, maxRows);
+        List<SortBuilder<?>> sortBuilders = new ArrayList<>();
+        publicOrderSql(sortBuilders,filterMap);
+        publicbuild(optId, filterMap, boolQueryBuilder);
+        Pair<Long, List<Map<String, Object>>> longListPair = elkOptLogSearcher.esSearch(boolQueryBuilder, sortBuilders, startPos, maxRows);
         List<OperationLog> operationLogList = new ArrayList<>();
-        if (longListPair != null){
+        if (longListPair != null) {
             for (Map<String, Object> objectMap : longListPair.getValue()) {
-                OperationLog operationLog = JSONObject.parseObject(StringBaseOpt.castObjectToString(objectMap),OperationLog.class);
+                OperationLog operationLog = JSONObject.parseObject(StringBaseOpt.castObjectToString(objectMap), OperationLog.class);
                 operationLogList.add(operationLog);
             }
         }
-        return  operationLogList;
+        return operationLogList;
+    }
+
+    private void publicOrderSql(List<SortBuilder<?>> sortBuilders, Map<String, Object> filterMap) {
+        String selfOrderBy = StringBaseOpt.objectToString(filterMap.get(GeneralJsonObjectDao.SELF_ORDER_BY));
+        if (StringUtils.isNotBlank(selfOrderBy)) {
+            Lexer lexer = new Lexer(selfOrderBy, Lexer.LANG_TYPE_SQL);
+            String aWord = lexer.getAWord();
+            StringBuilder orderBuilder = new StringBuilder();
+            while (StringUtils.isNotBlank(aWord)) {
+                if (StringUtils.equalsAnyIgnoreCase(aWord,
+                    ",", "desc", "asc")) {
+                    orderBuilder.append(aWord);
+                } else {
+                    orderBuilder.append(aWord);
+                }
+                orderBuilder.append(" ");
+                aWord = lexer.getAWord();
+            }
+            String[] fields = orderBuilder.toString().split(",");
+            for (String field : fields) {
+                SortBuilder sortBuilder;
+                String[] field2 = field.split(" ");
+                if (field2.length > 1) {
+                    if (field2[1].equalsIgnoreCase("desc")) {
+                        sortBuilder = SortBuilders.fieldSort(field2[0]).order(SortOrder.DESC);
+                    } else {
+                        sortBuilder = SortBuilders.fieldSort(field2[0]).order(SortOrder.ASC);
+                    }
+                } else {
+                    sortBuilder = SortBuilders.fieldSort(field2[0]).order(SortOrder.ASC);
+                }
+                sortBuilders.add(sortBuilder);
+            }
+        }
+        String sortField = StringBaseOpt.objectToString(filterMap.get(GeneralJsonObjectDao.TABLE_SORT_FIELD));
+        if (StringUtils.isNotBlank(sortField)) {
+            SortBuilder sortBuilder;
+            String sOrder = StringBaseOpt.objectToString(filterMap.get(GeneralJsonObjectDao.TABLE_SORT_ORDER));
+            if ("desc".equalsIgnoreCase(sOrder)) {
+                sortBuilder = SortBuilders.fieldSort(sortField).order(SortOrder.DESC);
+            } else {
+                sortBuilder = SortBuilders.fieldSort(sortField).order(SortOrder.ASC);
+            }
+            sortBuilders.add(sortBuilder);
+        }
     }
 
     /*
      * 查询日志数量
      */
     @Override
-    public int countOptLog(String optId, Map<String, Object> filter){
+    public int countOptLog(String optId, Map<String, Object> filter) {
         GenericObjectPool<RestHighLevelClient> restHighLevelClientGenericObjectPool = IndexerSearcherFactory.obtainclientPool(esServerConfig);
-        RestHighLevelClient restHighLevelClient=null;
+        RestHighLevelClient restHighLevelClient = null;
         try {
             String indexName = DocumentUtils.obtainDocumentIndexName(ESOperationLog.class);
             CountRequest countRequest = new CountRequest(indexName);
             SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
             BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
-            publicbuild(optId,filter,boolQueryBuilder);
+            publicbuild(optId, filter, boolQueryBuilder);
             searchSourceBuilder.query(boolQueryBuilder);
             countRequest.source(searchSourceBuilder);
             restHighLevelClient = restHighLevelClientGenericObjectPool.borrowObject();
             CountResponse countResponse = restHighLevelClient.count(countRequest, RequestOptions.DEFAULT);
-            return (int)countResponse.getCount();
-        }catch (Exception e){
-            logger.error("统计数量异常,异常信息："+e.getMessage());
-        }finally {
-            if (restHighLevelClient!=null){
+            return (int) countResponse.getCount();
+        } catch (Exception e) {
+            logger.error("统计数量异常,异常信息：" + e.getMessage());
+        } finally {
+            if (restHighLevelClient != null) {
                 restHighLevelClientGenericObjectPool.returnObject(restHighLevelClient);
             }
         }
@@ -142,16 +194,16 @@ public class ElkOptLogManager implements OperationLogManager {
             searchSourceBuilder.query(termQuery);
             searchRequest.source(searchSourceBuilder);
             restHighLevelClient = clientPool.borrowObject();
-            SearchResponse searchResponse= restHighLevelClient.search(searchRequest, RequestOptions.DEFAULT);
+            SearchResponse searchResponse = restHighLevelClient.search(searchRequest, RequestOptions.DEFAULT);
             SearchHit[] hits = searchResponse.getHits().getHits();
             String sourceAsString = hits[0].getSourceAsString();
             OperationLog operationLog = JSONObject.parseObject(sourceAsString, OperationLog.class);
             operationLog.setLogId(hits[0].getId());
             return operationLog;
-        }catch (Exception e){
-            logger.error("查询异常,异常信息："+e.getMessage());
-        }finally {
-            if (restHighLevelClient != null){
+        } catch (Exception e) {
+            logger.error("查询异常,异常信息：" + e.getMessage());
+        } finally {
+            if (restHighLevelClient != null) {
                 clientPool.returnObject(restHighLevelClient);
             }
         }
@@ -167,7 +219,7 @@ public class ElkOptLogManager implements OperationLogManager {
 
     @Override
     public void deleteMany(String[] logIds) {
-        if (logIds != null){
+        if (logIds != null) {
             for (String logId : logIds) {
                 deleteObjectById(logId);
             }
@@ -177,47 +229,50 @@ public class ElkOptLogManager implements OperationLogManager {
     @Override
     public JSONArray listOptLogsAsJson(String[] fields, Map<String, Object> filterMap, PageDesc pageDesc) {
         GenericObjectPool<RestHighLevelClient> clientPool = IndexerSearcherFactory.obtainclientPool(esServerConfig);
-        RestHighLevelClient restHighLevelClient=null;
+        RestHighLevelClient restHighLevelClient = null;
         try {
             String indexName = DocumentUtils.obtainDocumentIndexName(ESOperationLog.class);
             SearchRequest searchRequest = new SearchRequest(indexName);
             SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
             BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
-            if (fields != null && fields.length > 0){
-                searchSourceBuilder.fetchSource(fields,null);
+            if (fields != null && fields.length > 0) {
+                searchSourceBuilder.fetchSource(fields, null);
             }
-            publicbuild(null,filterMap,boolQueryBuilder);
+            List<SortBuilder<?>> sortBuilders = new ArrayList<>();
+            publicOrderSql(sortBuilders,filterMap);
+            publicbuild(null, filterMap, boolQueryBuilder);
             searchSourceBuilder.query(boolQueryBuilder);
+            searchSourceBuilder.sort(sortBuilders);
             searchSourceBuilder.explain(true);
-            searchSourceBuilder.from((pageDesc.getPageNo()>1)?(pageDesc.getPageNo()-1)* pageDesc.getPageSize():0);
+            searchSourceBuilder.from((pageDesc.getPageNo() > 1) ? (pageDesc.getPageNo() - 1) * pageDesc.getPageSize() : 0);
             searchSourceBuilder.size(pageDesc.getPageSize());
             searchRequest.source(searchSourceBuilder);
             restHighLevelClient = clientPool.borrowObject();
-            SearchResponse searchResponse= restHighLevelClient.search(searchRequest, RequestOptions.DEFAULT);
+            SearchResponse searchResponse = restHighLevelClient.search(searchRequest, RequestOptions.DEFAULT);
             SearchHit[] hits = searchResponse.getHits().getHits();
             JSONArray result = new JSONArray();
             for (SearchHit hit : hits) {
                 String sourceAsString = hit.getSourceAsString();
                 OperationLog esOperationLog = JSONObject.parseObject(sourceAsString, OperationLog.class);
                 esOperationLog.setLogId(hit.getId());
-                JSONObject jsonObject= (JSONObject) JSON.toJSON(esOperationLog);
-                jsonObject.put("userName", CodeRepositoryUtil.getValue("userCode",esOperationLog.getUserCode(),"all","zh_CN"));
+                JSONObject jsonObject = (JSONObject) JSON.toJSON(esOperationLog);
+                jsonObject.put("userName", CodeRepositoryUtil.getValue("userCode", esOperationLog.getUserCode(), "all", "zh_CN"));
                 result.add(jsonObject);
             }
             //查询总条数
             SearchSourceBuilder sourceBuilderCount = new SearchSourceBuilder();
             CountRequest countRequest = new CountRequest(indexName);
             BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
-            publicbuild(null,filterMap,boolQuery);
+            publicbuild(null, filterMap, boolQuery);
             sourceBuilderCount.query(boolQuery);
             countRequest.source(sourceBuilderCount);
             CountResponse countResponse = restHighLevelClient.count(countRequest, RequestOptions.DEFAULT);
             pageDesc.setTotalRows(NumberBaseOpt.castObjectToInteger(countResponse.getCount()));
             return result;
-        }catch (Exception e){
-            logger.error("查询异常,异常信息："+e.getMessage());
-        }finally {
-            if (restHighLevelClient!=null){
+        } catch (Exception e) {
+            logger.error("查询异常,异常信息：" + e.getMessage());
+        } finally {
+            if (restHighLevelClient != null) {
                 clientPool.returnObject(restHighLevelClient);
             }
         }
@@ -226,11 +281,11 @@ public class ElkOptLogManager implements OperationLogManager {
 
     @Override
     public int delete(String beginDate) {
-        if(StringUtils.isBlank(beginDate)) {
+        if (StringUtils.isBlank(beginDate)) {
             throw new ObjectException("请指定具体时间！");
         }
         GenericObjectPool<RestHighLevelClient> restHighLevelClientGenericObjectPool = IndexerSearcherFactory.obtainclientPool(esServerConfig);
-        RestHighLevelClient restHighLevelClient=null;
+        RestHighLevelClient restHighLevelClient = null;
         try {
             restHighLevelClient = restHighLevelClientGenericObjectPool.borrowObject();
             String indexName = DocumentUtils.obtainDocumentIndexName(ESOperationLog.class);
@@ -241,10 +296,10 @@ public class ElkOptLogManager implements OperationLogManager {
             BulkByScrollResponse bulkByScrollResponse = restHighLevelClient.deleteByQuery(delete, RequestOptions.DEFAULT);
             int batches = bulkByScrollResponse.getBatches();
             return batches;
-        }catch (Exception e){
-            logger.error("删除异常,异常信息："+e.getMessage());
-        }finally {
-            if (restHighLevelClient!=null){
+        } catch (Exception e) {
+            logger.error("删除异常,异常信息：" + e.getMessage());
+        } finally {
+            if (restHighLevelClient != null) {
                 restHighLevelClientGenericObjectPool.returnObject(restHighLevelClient);
             }
         }
@@ -257,32 +312,32 @@ public class ElkOptLogManager implements OperationLogManager {
         }
     }
 
-    public void updateOperationLog(OperationLog operationLog,String logId) {
-        ESOperationLog esOperationLog = ESOperationLog.fromOperationLog(operationLog,logId);
+    public void updateOperationLog(OperationLog operationLog, String logId) {
+        ESOperationLog esOperationLog = ESOperationLog.fromOperationLog(operationLog, logId);
         if (elkOptLogIndexer.mergeDocument(esOperationLog) == null) {
             throw new ObjectException(500, "elasticsearch操作失败");
         }
     }
 
-    private  void publicbuild(String optId,Map<String, Object> filter, BoolQueryBuilder boolQueryBuilder) throws ParseException {
-        if (StringUtils.isNotBlank(optId)){
-            boolQueryBuilder.must(QueryBuilders.termQuery("optId",optId));
+    private void publicbuild(String optId, Map<String, Object> filter, BoolQueryBuilder boolQueryBuilder) throws ParseException {
+        if (StringUtils.isNotBlank(optId)) {
+            boolQueryBuilder.must(QueryBuilders.termQuery("optId", optId));
         }
-        removeField(ESOperationLog.class,filter);
-        if (filter == null ||  filter.size() == 0){
+        removeField(ESOperationLog.class, filter);
+        if (filter == null || filter.size() == 0) {
             boolQueryBuilder.must(QueryBuilders.matchAllQuery());
-        }else {
+        } else {
             for (Map.Entry<String, Object> entry : filter.entrySet()) {
                 String key = entry.getKey();
                 Object value = entry.getValue();
-                if (StringUtils.isNotBlank(key) && value != null){
-                    if (key.startsWith("optTime")){
-                        buildQuery(key,"optTime", value, boolQueryBuilder);
-                    }else if ("optContent".equals(key)){
+                if (StringUtils.isNotBlank(key) && value != null) {
+                    if (key.startsWith("optTime")) {
+                        buildQuery(key, "optTime", value, boolQueryBuilder);
+                    } else if ("optContent".equals(key)) {
                         boolQueryBuilder.filter(QueryBuilders.multiMatchQuery(
-                            value, "optContent","newValue","oldValue"));
+                            value, "optContent", "newValue", "oldValue"));
                         //boolQueryBuilder.must(QueryBuilders.matchQuery(key,value));
-                    }else {
+                    } else {
                         //这个字段的类型不知道为什么是text所以需要添加 .keyword
                         boolQueryBuilder.must(QueryBuilders.termQuery(key, value));
                     }
@@ -291,7 +346,7 @@ public class ElkOptLogManager implements OperationLogManager {
         }
     }
 
-    private void buildQuery(String key, String field, Object value,BoolQueryBuilder boolQueryBuilder) throws ParseException {
+    private void buildQuery(String key, String field, Object value, BoolQueryBuilder boolQueryBuilder) throws ParseException {
         String optSuffix = key.substring(key.length() - 3).toLowerCase();
         Long date = new SmartDateFormat("yyyy-MM-dd HH:mm:ss").parse(String.valueOf(value)).getTime();
         switch (optSuffix) {
@@ -308,15 +363,15 @@ public class ElkOptLogManager implements OperationLogManager {
                 boolQueryBuilder.must(QueryBuilders.rangeQuery(field).lte(date));
                 break;
             default:
-                boolQueryBuilder.must(QueryBuilders.matchQuery(field,date));
+                boolQueryBuilder.must(QueryBuilders.matchQuery(field, date));
                 break;
         }
 
     }
 
     //移除非索引字段   比如：pageSize   pageNo  等。
-    private void removeField(Class clzz,Map<String,Object> map){
-        if (clzz == null || map == null ) {
+    private void removeField(Class clzz, Map<String, Object> map) {
+        if (clzz == null || map == null) {
             return;
         }
         List<String> fieldNames = Arrays.stream(clzz.getDeclaredFields()).map(Field::getName).collect(Collectors.toList());
