@@ -93,8 +93,7 @@ public class ElkOptLogManager implements OperationLogManager {
     @Override
     public List<OperationLog> listOptLog(String optId, Map<String, Object> filterMap, int startPos, int maxRows) {
         BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
-        List<SortBuilder<?>> sortBuilders = new ArrayList<>();
-        ESSearcher.mapSortBuilder(sortBuilders,filterMap);
+        List<SortBuilder<?>> sortBuilders = ESSearcher.mapSortBuilder(filterMap);
         publicbuild(optId, filterMap, boolQueryBuilder);
         Pair<Long, List<Map<String, Object>>> longListPair = elkOptLogSearcher.esSearch(boolQueryBuilder, sortBuilders, startPos, maxRows);
         List<OperationLog> operationLogList = new ArrayList<>();
@@ -191,11 +190,11 @@ public class ElkOptLogManager implements OperationLogManager {
             if (fields != null && fields.length > 0) {
                 searchSourceBuilder.fetchSource(fields, null);
             }
-            List<SortBuilder<?>> sortBuilders = new ArrayList<>();
-            ESSearcher.mapSortBuilder(sortBuilders,filterMap);
+            List<SortBuilder<?>> sortBuilders = ESSearcher.mapSortBuilder(filterMap);
             publicbuild(null, filterMap, boolQueryBuilder);
             searchSourceBuilder.query(boolQueryBuilder);
-            searchSourceBuilder.sort(sortBuilders);
+            if(sortBuilders!=null && !sortBuilders.isEmpty())
+                searchSourceBuilder.sort(sortBuilders);
             searchSourceBuilder.explain(true);
             searchSourceBuilder.from((pageDesc.getPageNo() > 1) ? (pageDesc.getPageNo() - 1) * pageDesc.getPageSize() : 0);
             searchSourceBuilder.size(pageDesc.getPageSize());
