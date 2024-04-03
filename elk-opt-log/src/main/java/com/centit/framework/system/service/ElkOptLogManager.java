@@ -273,7 +273,7 @@ public class ElkOptLogManager implements OperationLogManager {
 
     private void publicbuild(String optId, Map<String, Object> filter, BoolQueryBuilder boolQueryBuilder) throws ParseException {
         if (StringUtils.isNotBlank(optId)) {
-            boolQueryBuilder.must(QueryBuilders.termQuery("optId", optId));
+            boolQueryBuilder.must(QueryBuilders.matchQuery("optId", optId));
         }
         removeField(ESOperationLog.class, filter);
         if (filter == null || filter.size() == 0) {
@@ -291,7 +291,7 @@ public class ElkOptLogManager implements OperationLogManager {
                         //boolQueryBuilder.must(QueryBuilders.matchQuery(key,value));
                     } else {
                         //这个字段的类型不知道为什么是text所以需要添加 .keyword
-                        boolQueryBuilder.must(QueryBuilders.termQuery(key, value));
+                        boolQueryBuilder.must(QueryBuilders.matchQuery(key, value));
                     }
                 }
             }
