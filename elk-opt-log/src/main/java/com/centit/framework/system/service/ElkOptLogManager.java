@@ -72,8 +72,9 @@ public class ElkOptLogManager implements OperationLogManager {
     @Override
     public void save(OperationLog operationLog) {
         //不保存没有租户信息的日志，这个应该是错误
-        if (StringUtils.isBlank(operationLog.getTopUnit()))
+        if (StringUtils.isBlank(operationLog.getTopUnit())) {
             return;
+        }
         ESOperationLog esOperationLog = ESOperationLog.fromOperationLog(operationLog, null);
         if (elkOptLogIndexer.saveNewDocument(esOperationLog) == null) {
             throw new ObjectException(500, "elasticsearch操作失败");
@@ -193,8 +194,7 @@ public class ElkOptLogManager implements OperationLogManager {
             List<SortBuilder<?>> sortBuilders = ESSearcher.mapSortBuilder(filterMap);
             publicbuild(null, filterMap, boolQueryBuilder);
             searchSourceBuilder.query(boolQueryBuilder);
-            if(sortBuilders!=null && !sortBuilders.isEmpty())
-                searchSourceBuilder.sort(sortBuilders);
+            searchSourceBuilder.sort(sortBuilders);
             searchSourceBuilder.explain(true);
             searchSourceBuilder.from((pageDesc.getPageNo() > 1) ? (pageDesc.getPageNo() - 1) * pageDesc.getPageSize() : 0);
             searchSourceBuilder.size(pageDesc.getPageSize());
@@ -273,7 +273,7 @@ public class ElkOptLogManager implements OperationLogManager {
 
     private void publicbuild(String optId, Map<String, Object> filter, BoolQueryBuilder boolQueryBuilder) throws ParseException {
         if (StringUtils.isNotBlank(optId)) {
-            boolQueryBuilder.must(QueryBuilders.matchQuery("optId", optId));
+            boolQueryBuilder.must(QueryBuilders.termQuery("optId", optId));
         }
         removeField(ESOperationLog.class, filter);
         if (filter == null || filter.size() == 0) {
@@ -291,7 +291,7 @@ public class ElkOptLogManager implements OperationLogManager {
                         //boolQueryBuilder.must(QueryBuilders.matchQuery(key,value));
                     } else {
                         //这个字段的类型不知道为什么是text所以需要添加 .keyword
-                        boolQueryBuilder.must(QueryBuilders.matchQuery(key, value));
+                        boolQueryBuilder.must(QueryBuilders.termQuery(key, value));
                     }
                 }
             }
