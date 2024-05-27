@@ -9,11 +9,11 @@ import com.centit.search.annotation.ESType;
 import com.centit.search.document.ESDocument;
 import com.centit.support.algorithm.DatetimeOpt;
 import com.centit.support.algorithm.StringBaseOpt;
+import com.centit.support.algorithm.UuidOpt;
 import lombok.Data;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.Serializable;
-import java.util.UUID;
 
 @Data
 @ESType(indexName = "operationlog", shards = 5)
@@ -117,7 +117,7 @@ public class ESOperationLog  implements ESDocument , Serializable {
     public static ESOperationLog fromOperationLog(OperationLog log, String logId){
         ESOperationLog esLog = new ESOperationLog();
         if (StringUtils.isBlank(logId)){
-            esLog.setLogId(UUID.randomUUID().toString().replaceAll("-",""));
+            esLog.setLogId(UuidOpt.getUuidAsString32());
         }else {
             esLog.setLogId(logId);
         }
