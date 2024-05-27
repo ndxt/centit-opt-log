@@ -3,6 +3,7 @@ package com.centit.framework.system.controller;
 import com.alibaba.fastjson2.JSONArray;
 import com.centit.framework.common.ResponseData;
 import com.centit.framework.common.ResponseMapData;
+import com.centit.framework.common.WebOptUtils;
 import com.centit.framework.core.controller.BaseController;
 import com.centit.framework.core.controller.WrapUpResponseBody;
 import com.centit.framework.core.dao.CodeBook;
@@ -11,18 +12,15 @@ import com.centit.framework.core.dao.PageQueryResult;
 import com.centit.framework.model.basedata.OperationLog;
 import com.centit.framework.operationlog.RecordOperationLog;
 import com.centit.framework.system.service.OperationLogManager;
-import com.centit.search.service.Impl.ESSearcher;
-import com.centit.support.algorithm.CollectionsOpt;
-import com.centit.support.algorithm.NumberBaseOpt;
 import com.centit.support.algorithm.StringBaseOpt;
+import com.centit.support.common.ObjectException;
 import com.centit.support.database.utils.PageDesc;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
-import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
@@ -33,16 +31,12 @@ import java.util.Map;
 
 @Controller
 @Api(value = "系统日志维护接口", tags = "系统日志操作接口")
-@RequestMapping(value = {"/optlog","/elkoptlog"})
+@RequestMapping(value = "/optlog")
 public class OptLogController extends BaseController {
 
     @Autowired
     @NotNull
     private OperationLogManager optLogManager;
-
-    @Autowired(required = false)
-    @Qualifier(value = "elkOptLogSearcher")
-    private ESSearcher elkOptLogSearcher;
 
     /*
      * 查询系统日志
@@ -63,6 +57,15 @@ public class OptLogController extends BaseController {
     @WrapUpResponseBody
     public ResponseMapData list(String[] field, PageDesc pageDesc, HttpServletRequest request) {
         Map<String, Object> searchColumn = BaseController.collectRequestParameters(request);
+        String topUnit = StringBaseOpt.castObjectToString(searchColumn.get("topUnit"));
+        if(StringUtils.isBlank(topUnit)) {
+            topUnit = WebOptUtils.getCurrentTopUnit(request);
+            if(StringUtils.isBlank(topUnit)) {
+                throw new ObjectException(ResponseData.ERROR_FIELD_INPUT_NOT_VALID,
+                    getI18nMessage("error.701.field_is_blank",  request,"topUnit"));
+            }
+            searchColumn.put("topUnit", topUnit);
+        }
         JSONArray jsonArray = optLogManager.listOptLogsAsJson(field, searchColumn, pageDesc);
         ResponseMapData resData = new ResponseMapData();
         resData.addResponseData(PageQueryResult.OBJECT_LIST_LABEL, jsonArray);
@@ -185,14 +188,7 @@ public class OptLogController extends BaseController {
         return optLogManager.countOptLog(optId, searchColumn);
     }
 
-    /*
-     * @param map   字段名
-     * @param value  字段值  （分词后值）
-     * @param queryWord  在根据前面字段和字段值过滤后再进行结果的筛选
-     * @param pageDesc  分页
-     * @return
-     */
-    @ApiOperation(value = "精确查询日志信息")
+   /* @ApiOperation(value = "精确查询日志信息")
     @RequestMapping(value = "/listES/{map}/{value}/{queryWord}", method = RequestMethod.GET)
     @WrapUpResponseBody
     public PageQueryResult<Map<String, Object>> listEs(String map, String value, String queryWord, PageDesc pageDesc) {
@@ -210,5 +206,5 @@ public class OptLogController extends BaseController {
             elkOptLogSearcher.search(queryWord, pageDesc.getPageNo(), pageDesc.getPageSize());
         pageDesc.setTotalRows(NumberBaseOpt.castObjectToInteger(res.getLeft()));
         return PageQueryResult.createResult(res.getRight(), pageDesc);
-    }
+    }*/
 }
