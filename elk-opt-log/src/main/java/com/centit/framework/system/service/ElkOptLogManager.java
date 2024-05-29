@@ -35,6 +35,8 @@ import org.elasticsearch.index.reindex.DeleteByQueryRequest;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.sort.SortBuilder;
+import org.elasticsearch.search.sort.SortBuilders;
+import org.elasticsearch.search.sort.SortOrder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -87,17 +89,29 @@ public class ElkOptLogManager implements OperationLogManager {
         }
     }
 
+    private List<SortBuilder<?>> createSortBuilder(Map<String, Object> filterMap){
+        List<SortBuilder<?>> sortBuilders = ESSearcher.mapSortBuilder(filterMap);
+        if(sortBuilders==null){
+            sortBuilders = new ArrayList<>(1);
+        }
+        if(sortBuilders.isEmpty()){
+            sortBuilders.add(SortBuilders.fieldSort("optTime").order(SortOrder.DESC));
+        }
+        return sortBuilders;
+    }
     @SneakyThrows
     @Override
     public List<OperationLog> listOptLog(String optId, Map<String, Object> filterMap, int startPos, int maxRows) {
         BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
-        List<SortBuilder<?>> sortBuilders = ESSearcher.mapSortBuilder(filterMap);
+
         publicbuild(optId, filterMap, boolQueryBuilder);
-        Pair<Long, List<Map<String, Object>>> longListPair = elkOptLogSearcher.esSearch(boolQueryBuilder, sortBuilders, startPos, maxRows);
+        Pair<Long, List<Map<String, Object>>> longListPair = elkOptLogSearcher.esSearch(
+            boolQueryBuilder, createSortBuilder(filterMap), startPos, maxRows);
         List<OperationLog> operationLogList = new ArrayList<>();
         if (longListPair != null) {
             for (Map<String, Object> objectMap : longListPair.getValue()) {
-                OperationLog operationLog = JSONObject.parseObject(StringBaseOpt.castObjectToString(objectMap), OperationLog.class);
+                OperationLog operationLog = JSONObject.parseObject(
+                        StringBaseOpt.castObjectToString(objectMap), OperationLog.class);
                 operationLogList.add(operationLog);
             }
         }
@@ -188,13 +202,17 @@ public class ElkOptLogManager implements OperationLogManager {
             if (fields != null && fields.length > 0) {
                 searchSourceBuilder.fetchSource(fields, null);
             }
-            List<SortBuilder<?>> sortBuilders = ESSearcher.mapSortBuilder(filterMap);
+
             publicbuild(null, filterMap, boolQueryBuilder);
             searchSourceBuilder.query(boolQueryBuilder);
-            searchSourceBuilder.sort(sortBuilders);
-            searchSourceBuilder.explain(true);
-            searchSourceBuilder.from((pageDesc.getPageNo() > 1) ? (pageDesc.getPageNo() - 1) * pageDesc.getPageSize() : 0);
-            searchSourceBuilder.size(pageDesc.getPageSize());
+            searchSourceBuilder.sort(createSortBuilder(filterMap));
+
+            if(pageDesc.getPageSize()>0) {
+                searchSourceBuilder.explain(true)
+                    .from((pageDesc.getPageNo() > 1) ? (pageDesc.getPageNo() - 1) * pageDesc.getPageSize() : 0)
+                    .size(pageDesc.getPageSize());
+            }
+
             searchRequest.source(searchSourceBuilder);
             restHighLevelClient = clientPool.borrowObject();
             SearchResponse searchResponse = restHighLevelClient.search(searchRequest, RequestOptions.DEFAULT);
@@ -220,12 +238,13 @@ public class ElkOptLogManager implements OperationLogManager {
             return result;
         } catch (Exception e) {
             logger.error("查询异常,异常信息：" + e.getMessage());
+            throw new ObjectException(ObjectException.UNKNOWN_EXCEPTION,
+                "查询日志失败:"+e.getMessage(), e);
         } finally {
             if (restHighLevelClient != null) {
                 clientPool.returnObject(restHighLevelClient);
             }
         }
-        return null;
     }
 
     @Override

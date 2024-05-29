@@ -37,7 +37,6 @@ public class ESOperationLog  implements ESDocument , Serializable {
     @ESField(type = "keyword")
     private String userCode;
 
-
     /**
      * 操作用户所属机构
      */
@@ -102,7 +101,6 @@ public class ESOperationLog  implements ESDocument , Serializable {
      */
     @ESField(type = "text", query = true, highlight = true, analyzer = "ik_smart")
     private String oldValue;
-
 
     @Override
     public String obtainDocumentId() {
