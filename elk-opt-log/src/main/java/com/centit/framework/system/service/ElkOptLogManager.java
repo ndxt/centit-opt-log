@@ -292,7 +292,7 @@ public class ElkOptLogManager implements OperationLogManager {
             boolQueryBuilder.must(QueryBuilders.termQuery("optId", optId));
         }
         removeField(ESOperationLog.class, filter);
-        if (filter == null || filter.size() == 0) {
+        if (filter == null || filter.isEmpty()) {
             boolQueryBuilder.must(QueryBuilders.matchAllQuery());
         } else {
             for (Map.Entry<String, Object> entry : filter.entrySet()) {
@@ -300,13 +300,15 @@ public class ElkOptLogManager implements OperationLogManager {
                 Object value = entry.getValue();
                 if (StringUtils.isNotBlank(key) && value != null) {
                     if (key.startsWith("optTime")) {
-                        buildQuery(key, "optTime", value, boolQueryBuilder);
-                    } else if ("optContent".equals(key)) {
+                        buildDatetimeFilter(key, "optTime", value, boolQueryBuilder);
+                    } else if (StringUtils.equalsAnyIgnoreCase(key, "optContent", "newValue", "oldValue", "keyWord")) {
                         boolQueryBuilder.filter(QueryBuilders.multiMatchQuery(
                             value, "optContent", "newValue", "oldValue"));
                         //boolQueryBuilder.must(QueryBuilders.matchQuery(key,value));
-                    } else {
-                        //这个字段的类型不知道为什么是text所以需要添加 .keyword
+                    } else  if(StringUtils.equalsAnyIgnoreCase(key, "topUnit", "optTag", "userCode", "unitCode", "optMethod",
+                         "osId", "optId", "logLevel", "loginIp", "correlationId", "logId")) {
+                        //这个字段的类型不知道为什么是text所以需要添加 .keyword；
+                        // 这个事索引结构中的数据类型创建的不正确导致的
                         boolQueryBuilder.must(QueryBuilders.termQuery(key, value));
                     }
                 }
@@ -314,7 +316,7 @@ public class ElkOptLogManager implements OperationLogManager {
         }
     }
 
-    private void buildQuery(String key, String field, Object value, BoolQueryBuilder boolQueryBuilder) throws ParseException {
+    private void buildDatetimeFilter(String key, String field, Object value, BoolQueryBuilder boolQueryBuilder) throws ParseException {
         String optSuffix = key.substring(key.length() - 3).toLowerCase();
         Long date = new SmartDateFormat("yyyy-MM-dd HH:mm:ss").parse(String.valueOf(value)).getTime();
         switch (optSuffix) {
