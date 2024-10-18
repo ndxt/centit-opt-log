@@ -12,11 +12,12 @@ import com.centit.search.service.ESServerConfig;
 import com.centit.search.service.Impl.ESIndexer;
 import com.centit.search.service.Impl.ESSearcher;
 import com.centit.search.service.IndexerSearcherFactory;
+import com.centit.support.algorithm.DatetimeOpt;
+import com.centit.support.algorithm.GeneralAlgorithm;
 import com.centit.support.algorithm.NumberBaseOpt;
 import com.centit.support.algorithm.StringBaseOpt;
 import com.centit.support.common.ObjectException;
 import com.centit.support.database.utils.PageDesc;
-import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.pool2.impl.GenericObjectPool;
@@ -43,7 +44,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.lang.reflect.Field;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -99,7 +99,7 @@ public class ElkOptLogManager implements OperationLogManager {
         }
         return sortBuilders;
     }
-    @SneakyThrows
+
     @Override
     public List<OperationLog> listOptLog(String optId, Map<String, Object> filterMap, int startPos, int maxRows) {
         BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
@@ -287,7 +287,7 @@ public class ElkOptLogManager implements OperationLogManager {
         }
     }
 
-    private void publicbuild(String optId, Map<String, Object> filter, BoolQueryBuilder boolQueryBuilder) throws ParseException {
+    private void publicbuild(String optId, Map<String, Object> filter, BoolQueryBuilder boolQueryBuilder) {
         if (StringUtils.isNotBlank(optId)) {
             boolQueryBuilder.must(QueryBuilders.termQuery("optId", optId));
         }
@@ -300,7 +300,9 @@ public class ElkOptLogManager implements OperationLogManager {
                 Object value = entry.getValue();
                 if (StringUtils.isNotBlank(key) && value != null) {
                     if (key.startsWith("optTime")) {
-                        buildDatetimeFilter(key, "optTime", value, boolQueryBuilder);
+                        buildDatetimeFilter(key, "optTime",
+                            GeneralAlgorithm.nvl(DatetimeOpt.castObjectToDate(value), DatetimeOpt.currentUtilDate()).getTime(),
+                            boolQueryBuilder);
                     } else if (StringUtils.equalsAnyIgnoreCase(key, "optContent", "newValue", "oldValue", "keyWord")) {
                         boolQueryBuilder.filter(QueryBuilders.multiMatchQuery(
                             value, "optContent", "newValue", "oldValue"));
@@ -316,9 +318,9 @@ public class ElkOptLogManager implements OperationLogManager {
         }
     }
 
-    private void buildDatetimeFilter(String key, String field, Object value, BoolQueryBuilder boolQueryBuilder) throws ParseException {
+    private void buildDatetimeFilter(String key, String field, Object value, BoolQueryBuilder boolQueryBuilder) {
         String optSuffix = key.substring(key.length() - 3).toLowerCase();
-        Long date = new SmartDateFormat("yyyy-MM-dd HH:mm:ss").parse(String.valueOf(value)).getTime();
+        Long date = NumberBaseOpt.castObjectToLong(value);
         switch (optSuffix) {
             case "_gt":
                 boolQueryBuilder.must(QueryBuilders.rangeQuery(field).gt(date));
