@@ -44,10 +44,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service("optLogManager")
@@ -301,8 +298,7 @@ public class ElkOptLogManager implements OperationLogManager {
                 if (StringUtils.isNotBlank(key) && value != null) {
                     if (key.startsWith("optTime")) {
                         buildDatetimeFilter(key, "optTime",
-                            GeneralAlgorithm.nvl(DatetimeOpt.castObjectToDate(value), DatetimeOpt.currentUtilDate()).getTime(),
-                            boolQueryBuilder);
+                            DatetimeOpt.castObjectToDate(value), boolQueryBuilder);
                     } else if (StringUtils.equalsAnyIgnoreCase(key, "optContent", "newValue", "oldValue", "keyWord")) {
                         boolQueryBuilder.filter(QueryBuilders.multiMatchQuery(
                             value, "optContent", "newValue", "oldValue"));
@@ -318,9 +314,10 @@ public class ElkOptLogManager implements OperationLogManager {
         }
     }
 
-    private void buildDatetimeFilter(String key, String field, Object value, BoolQueryBuilder boolQueryBuilder) {
+    private void buildDatetimeFilter(String key, String field, Date value, BoolQueryBuilder boolQueryBuilder) {
+        if(value == null) return;
         String optSuffix = key.substring(key.length() - 3).toLowerCase();
-        Long date = NumberBaseOpt.castObjectToLong(value);
+        Long date = value.getTime();
         switch (optSuffix) {
             case "_gt":
                 boolQueryBuilder.must(QueryBuilders.rangeQuery(field).gt(date));
@@ -338,7 +335,6 @@ public class ElkOptLogManager implements OperationLogManager {
                 boolQueryBuilder.must(QueryBuilders.matchQuery(field, date));
                 break;
         }
-
     }
 
     //移除非索引字段   比如：pageSize   pageNo  等。
