@@ -159,10 +159,10 @@ public class OptLogController extends BaseController {
             name = "optId", value = "业务系统名",
             allowMultiple = true, paramType = "path", dataType = "String"),
         @ApiImplicitParam(
-            name = "startPos", value = "查询起始位置offset",
+            name = "startPos", value = "分页查询起始页面",
             paramType = "query", dataTypeClass = Integer.class),
         @ApiImplicitParam(
-            name = "maxSize", value = "返回条数",
+            name = "maxSize", value = "每页大小",
             paramType = "query", dataTypeClass = Integer.class)
     })
     @GetMapping("/query/{optId}")
