@@ -29,7 +29,6 @@ import org.elasticsearch.client.core.CountResponse;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.RangeQueryBuilder;
-import org.elasticsearch.index.query.TermQueryBuilder;
 import org.elasticsearch.index.reindex.BulkByScrollResponse;
 import org.elasticsearch.index.reindex.DeleteByQueryRequest;
 import org.elasticsearch.search.SearchHit;
@@ -144,30 +143,11 @@ public class ElkOptLogManager implements OperationLogManager {
 
     @Override
     public OperationLog getOptLogById(String logId) {
-        GenericObjectPool<RestHighLevelClient> clientPool = IndexerSearcherFactory.obtainclientPool(esServerConfig);
-        RestHighLevelClient restHighLevelClient = null;
-        try {
-            String indexName = DocumentUtils.obtainDocumentIndexName(ESOperationLog.class);
-            SearchRequest searchRequest = new SearchRequest(indexName);
-            SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
-            TermQueryBuilder termQuery = QueryBuilders.termQuery("logId", logId);
-            searchSourceBuilder.query(termQuery);
-            searchRequest.source(searchSourceBuilder);
-            restHighLevelClient = clientPool.borrowObject();
-            SearchResponse searchResponse = restHighLevelClient.search(searchRequest, RequestOptions.DEFAULT);
-            SearchHit[] hits = searchResponse.getHits().getHits();
-            String sourceAsString = hits[0].getSourceAsString();
-            OperationLog operationLog = JSONObject.parseObject(sourceAsString, OperationLog.class);
-            operationLog.setLogId(hits[0].getId());
-            return operationLog;
-        } catch (Exception e) {
-            logger.error("查询异常,异常信息：" + e.getMessage());
-        } finally {
-            if (restHighLevelClient != null) {
-                clientPool.returnObject(restHighLevelClient);
-            }
+        JSONObject object = elkOptLogSearcher.getDocumentById("logId", logId);
+        if(object==null){
+            return null;
         }
-        return null;
+        return object.toJavaObject(OperationLog.class);
     }
 
     @Override
