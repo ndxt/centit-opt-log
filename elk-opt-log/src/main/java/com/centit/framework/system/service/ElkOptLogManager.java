@@ -99,7 +99,7 @@ public class ElkOptLogManager implements OperationLogManager {
     public List<OperationLog> listOptLog(String optId, Map<String, Object> filterMap, int startPos, int maxRows) {
         BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
 
-        publicbuild(optId, filterMap, boolQueryBuilder);
+        buildQueryFilter(optId, filterMap, boolQueryBuilder);
         Pair<Long, List<Map<String, Object>>> longListPair = elkOptLogSearcher.esSearch(
             boolQueryBuilder, createSortBuilder(filterMap), startPos, maxRows);
         List<OperationLog> operationLogList = new ArrayList<>();
@@ -125,7 +125,7 @@ public class ElkOptLogManager implements OperationLogManager {
             CountRequest countRequest = new CountRequest(indexName);
             SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
             BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
-            publicbuild(optId, filter, boolQueryBuilder);
+            buildQueryFilter(optId, filter, boolQueryBuilder);
             searchSourceBuilder.query(boolQueryBuilder);
             countRequest.source(searchSourceBuilder);
             restHighLevelClient = restHighLevelClientGenericObjectPool.borrowObject();
@@ -179,7 +179,7 @@ public class ElkOptLogManager implements OperationLogManager {
                 searchSourceBuilder.fetchSource(fields, null);
             }
 
-            publicbuild(null, filterMap, boolQueryBuilder);
+            buildQueryFilter(null, filterMap, boolQueryBuilder);
             searchSourceBuilder.query(boolQueryBuilder);
             searchSourceBuilder.sort(createSortBuilder(filterMap));
 
@@ -206,7 +206,7 @@ public class ElkOptLogManager implements OperationLogManager {
             SearchSourceBuilder sourceBuilderCount = new SearchSourceBuilder();
             CountRequest countRequest = new CountRequest(indexName);
             BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
-            publicbuild(null, filterMap, boolQuery);
+            buildQueryFilter(null, filterMap, boolQuery);
             sourceBuilderCount.query(boolQuery);
             countRequest.source(sourceBuilderCount);
             CountResponse countResponse = restHighLevelClient.count(countRequest, RequestOptions.DEFAULT);
@@ -263,7 +263,7 @@ public class ElkOptLogManager implements OperationLogManager {
         }
     }
 
-    private void publicbuild(String optId, Map<String, Object> filter, BoolQueryBuilder boolQueryBuilder) {
+    private void buildQueryFilter(String optId, Map<String, Object> filter, BoolQueryBuilder boolQueryBuilder) {
         if (StringUtils.isNotBlank(optId)) {
             boolQueryBuilder.must(QueryBuilders.termQuery("optId", optId));
         }
@@ -275,43 +275,61 @@ public class ElkOptLogManager implements OperationLogManager {
                 String key = entry.getKey();
                 Object value = entry.getValue();
                 if (StringUtils.isNotBlank(key) && value != null) {
-                    if (key.startsWith("optTime")) {
-                        buildDatetimeFilter(key, "optTime",
-                            DatetimeOpt.castObjectToDate(value), boolQueryBuilder);
-                    } else if (StringUtils.equalsAnyIgnoreCase(key, "optContent", "newValue", "oldValue", "keyWord")) {
+                   if (StringUtils.equalsAnyIgnoreCase(key, "optContent", "newValue", "oldValue", "keyWord")) {
                         boolQueryBuilder.filter(QueryBuilders.multiMatchQuery(
                             value, "optContent", "newValue", "oldValue"));
                         //boolQueryBuilder.must(QueryBuilders.matchQuery(key,value));
-                    } else  if(StringUtils.equalsAnyIgnoreCase(key, "topUnit", "optTag", "userCode", "unitCode", "optMethod",
-                         "osId", "optId", "logLevel", "loginIp", "correlationId", "logId")) {
+                    } else {
                         //这个字段的类型不知道为什么是text所以需要添加 .keyword；
                         // 这个事索引结构中的数据类型创建的不正确导致的
-                        boolQueryBuilder.must(QueryBuilders.termQuery(key, value));
+                       buildQueryPiece(key, value, boolQueryBuilder);
                     }
                 }
             }
         }
     }
 
-    private void buildDatetimeFilter(String key, String field, Date value, BoolQueryBuilder boolQueryBuilder) {
+    private void buildQueryPiece(String key, Object value, BoolQueryBuilder boolQueryBuilder) {
         if(value == null) return;
-        String optSuffix = key.substring(key.length() - 3).toLowerCase();
-        Long date = value.getTime();
+        String field, optSuffix;
+        if(key.length()>3 && key.charAt(key.length() - 3) == '_') {
+            field = key.substring(0, key.length() - 3);
+            optSuffix = key.substring(key.length() - 3).toLowerCase();
+        } else {
+            field = key;
+            optSuffix = "_eq";
+        }
+        if(!StringUtils.equalsAnyIgnoreCase(field, "optTime", "topUnit", "optTag", "userCode", "unitCode", "optMethod",
+            "osId", "optId", "logLevel", "loginIp", "correlationId", "logId")){
+            return ;
+        }
+        if("optTime".equals(field)){
+            Date optTime = DatetimeOpt.castObjectToDate(value);
+            if(optTime == null) return;
+            value = optTime.getTime();
+        }
+
         switch (optSuffix) {
             case "_gt":
-                boolQueryBuilder.must(QueryBuilders.rangeQuery(field).gt(date));
+                boolQueryBuilder.must(QueryBuilders.rangeQuery(field).gt(value));
                 break;
             case "_ge":
-                boolQueryBuilder.must(QueryBuilders.rangeQuery(field).gte(date));
+                boolQueryBuilder.must(QueryBuilders.rangeQuery(field).gte(value));
                 break;
             case "_lt":
-                boolQueryBuilder.must(QueryBuilders.rangeQuery(field).lt(date));
+                boolQueryBuilder.must(QueryBuilders.rangeQuery(field).lt(value));
                 break;
             case "_le":
-                boolQueryBuilder.must(QueryBuilders.rangeQuery(field).lte(date));
+                boolQueryBuilder.must(QueryBuilders.rangeQuery(field).lte(value));
                 break;
+            case "_lk":
+                boolQueryBuilder.must(QueryBuilders.wildcardQuery(field,
+                    ESSearcher.buildWildcardQuery(StringBaseOpt.castObjectToString(value))));
+                break;
+            case "_eq":
             default:
-                boolQueryBuilder.must(QueryBuilders.matchQuery(field, date));
+                boolQueryBuilder.must(QueryBuilders.termQuery(field, value));
+                //boolQueryBuilder.must(QueryBuilders.matchQuery(field, value));
                 break;
         }
     }
