@@ -194,12 +194,14 @@ public class ElkOptLogManager implements OperationLogManager {
             SearchResponse searchResponse = restHighLevelClient.search(searchRequest, RequestOptions.DEFAULT);
             SearchHit[] hits = searchResponse.getHits().getHits();
             JSONArray result = new JSONArray();
+            String topUnit=StringBaseOpt.castObjectToString(filterMap.get("topUnit"),"");
             for (SearchHit hit : hits) {
                 String sourceAsString = hit.getSourceAsString();
                 OperationLog esOperationLog = JSONObject.parseObject(sourceAsString, OperationLog.class);
                 esOperationLog.setLogId(hit.getId());
                 JSONObject jsonObject = (JSONObject) JSON.toJSON(esOperationLog);
-                jsonObject.put("userName", CodeRepositoryUtil.getValue("userCode", esOperationLog.getUserCode(), "all", "zh_CN"));
+                jsonObject.put("userName", CodeRepositoryUtil.getValue("userCode", esOperationLog.getUserCode(), topUnit, "zh_CN"));
+                jsonObject.put("unitName", CodeRepositoryUtil.getValue("unitCode", esOperationLog.getUnitCode(), topUnit, "zh_CN"));
                 result.add(jsonObject);
             }
             //查询总条数
