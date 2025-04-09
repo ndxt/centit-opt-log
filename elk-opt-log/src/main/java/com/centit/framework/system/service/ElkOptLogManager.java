@@ -269,7 +269,6 @@ public class ElkOptLogManager implements OperationLogManager {
         if (StringUtils.isNotBlank(optId)) {
             boolQueryBuilder.must(QueryBuilders.termQuery("optId", optId));
         }
-        removeField(ESOperationLog.class, filter);
         if (filter == null || filter.isEmpty()) {
             boolQueryBuilder.must(QueryBuilders.matchAllQuery());
         } else {
@@ -336,12 +335,4 @@ public class ElkOptLogManager implements OperationLogManager {
         }
     }
 
-    //移除非索引字段   比如：pageSize   pageNo  等。
-    private void removeField(Class clzz, Map<String, Object> map) {
-        if (clzz == null || map == null) {
-            return;
-        }
-        List<String> fieldNames = Arrays.stream(clzz.getDeclaredFields()).map(Field::getName).collect(Collectors.toList());
-        map.keySet().removeIf(key -> !fieldNames.contains(key) && !key.startsWith("optTime_"));
-    }
 }
