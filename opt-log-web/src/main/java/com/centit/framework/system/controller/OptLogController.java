@@ -51,7 +51,10 @@ public class OptLogController extends BaseController {
             allowMultiple = true, paramType = "query", dataType = "String"),
         @ApiImplicitParam(
             name = "pageDesc", value = "分页对象",
-            paramType = "query", dataTypeClass = PageDesc.class)
+            paramType = "query", dataTypeClass = PageDesc.class),
+        @ApiImplicitParam(
+            name = "searchAfter", value = "上一页返回的游标，深分页时使用",
+            paramType = "query", dataType = "String")
     })
     @GetMapping
     @WrapUpResponseBody
@@ -70,6 +73,11 @@ public class OptLogController extends BaseController {
         ResponseMapData resData = new ResponseMapData();
         resData.addResponseData(PageQueryResult.OBJECT_LIST_LABEL, jsonArray);
         resData.addResponseData(PageQueryResult.PAGE_INFO_LABEL, pageDesc);
+        String nextSearchAfter = StringBaseOpt.castObjectToString(
+            searchColumn.get("nextSearchAfter"), "");
+        if (StringUtils.isNotBlank(nextSearchAfter)) {
+            resData.addResponseData("nextSearchAfter", nextSearchAfter);
+        }
         resData.addResponseData(CodeBook.SELF_ORDER_BY, searchColumn.get(CodeBook.SELF_ORDER_BY));
         return resData;
     }

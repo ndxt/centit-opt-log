@@ -33,22 +33,38 @@ import org.elasticsearch.index.reindex.BulkByScrollResponse;
 import org.elasticsearch.index.reindex.DeleteByQueryRequest;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
+import org.elasticsearch.search.sort.FieldSortBuilder;
 import org.elasticsearch.search.sort.SortBuilder;
 import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.lang.reflect.Field;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
 @Service("optLogManager")
 public class ElkOptLogManager implements OperationLogManager {
 
     public static final Logger logger = LoggerFactory.getLogger(ElkOptLogManager.class);
+
+    /** Elasticsearch 默认的 from + size 窗口大小。需要调整 ES 设置时同步调整此值。 */
+    private static final int DEFAULT_MAX_RESULT_WINDOW = 10000;
+    /** 查询参数：上一页返回的游标，使用 URL-safe Base64 编码。 */
+    private static final String SEARCH_AFTER_PARAM = "searchAfter";
+    /** 写回 filterMap，由 controller 加入响应，供前端请求下一页。 */
+    private static final String NEXT_SEARCH_AFTER_PARAM = "nextSearchAfter";
+
+    /** 与 ES 索引的 index.max_result_window 保持一致，默认值为 10000。 */
+    @Value("${elasticsearch.max-result-window:10000}")
+    private int maxResultWindow = DEFAULT_MAX_RESULT_WINDOW;
 
     private ESIndexer elkOptLogIndexer;
 
@@ -91,6 +107,18 @@ public class ElkOptLogManager implements OperationLogManager {
         }
         if(sortBuilders.isEmpty()){
             sortBuilders.add(SortBuilders.fieldSort("optTime").order(SortOrder.DESC));
+        }
+        // optTime 可能相同，必须增加唯一字段作为 search_after 的稳定排序条件。
+        boolean hasLogIdSort = false;
+        for (SortBuilder<?> sortBuilder : sortBuilders) {
+            if (sortBuilder instanceof FieldSortBuilder
+                && "logId".equals(((FieldSortBuilder) sortBuilder).getFieldName())) {
+                hasLogIdSort = true;
+                break;
+            }
+        }
+        if (!hasLogIdSort) {
+            sortBuilders.add(SortBuilders.fieldSort("logId").order(SortOrder.ASC));
         }
         return sortBuilders;
     }
@@ -171,6 +199,7 @@ public class ElkOptLogManager implements OperationLogManager {
         GenericObjectPool<RestHighLevelClient> clientPool = IndexerSearcherFactory.obtainclientPool(esServerConfig);
         RestHighLevelClient restHighLevelClient = null;
         try {
+            filterMap.remove(NEXT_SEARCH_AFTER_PARAM);
             String indexName = DocumentUtils.obtainDocumentIndexName(ESOperationLog.class);
             SearchRequest searchRequest = new SearchRequest(indexName);
             SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
@@ -183,10 +212,29 @@ public class ElkOptLogManager implements OperationLogManager {
             searchSourceBuilder.query(boolQueryBuilder);
             searchSourceBuilder.sort(createSortBuilder(filterMap));
 
-            if(pageDesc.getPageSize()>0) {
-                searchSourceBuilder.explain(true)
-                    .from((pageDesc.getPageNo() > 1) ? (pageDesc.getPageNo() - 1) * pageDesc.getPageSize() : 0)
-                    .size(pageDesc.getPageSize());
+            int pageSize = pageDesc.getPageSize();
+            if (pageSize > 0) {
+                String searchAfter = StringBaseOpt.castObjectToString(
+                    filterMap.get(SEARCH_AFTER_PARAM), "");
+                if (StringUtils.isNotBlank(searchAfter)) {
+                    // search_after 不使用 from，因此不会随着页码增加而消耗结果窗口。
+                    searchSourceBuilder.searchAfter(decodeSearchAfter(searchAfter));
+                } else {
+                    long from = (pageDesc.getPageNo() > 1)
+                        ? (long) (pageDesc.getPageNo() - 1) * pageSize : 0L;
+                    if (from + pageSize > maxResultWindow) {
+                        throw new ObjectException(
+                            "查询页数过深，请使用 searchAfter 游标分页，或缩小查询范围");
+                    }
+                    searchSourceBuilder.from((int) from);
+                }
+                if (pageSize > maxResultWindow) {
+                    throw new ObjectException(
+                        "每页大小不能超过 Elasticsearch 的结果窗口限制: "
+                            + maxResultWindow);
+                }
+                // explain 只用于调试，会显著增加查询开销，生产查询不应开启。
+                searchSourceBuilder.size(pageSize);
             }
 
             searchRequest.source(searchSourceBuilder);
@@ -204,6 +252,10 @@ public class ElkOptLogManager implements OperationLogManager {
                 jsonObject.put("unitName", CodeRepositoryUtil.getValue("unitCode", esOperationLog.getUnitCode(), topUnit, "zh_CN"));
                 result.add(jsonObject);
             }
+            if (hits.length > 0) {
+                filterMap.put(NEXT_SEARCH_AFTER_PARAM,
+                    encodeSearchAfter(hits[hits.length - 1].getSortValues()));
+            }
             //查询总条数
             SearchSourceBuilder sourceBuilderCount = new SearchSourceBuilder();
             CountRequest countRequest = new CountRequest(indexName);
@@ -214,6 +266,8 @@ public class ElkOptLogManager implements OperationLogManager {
             CountResponse countResponse = restHighLevelClient.count(countRequest, RequestOptions.DEFAULT);
             pageDesc.setTotalRows(NumberBaseOpt.castObjectToInteger(countResponse.getCount()));
             return result;
+        } catch (ObjectException e) {
+            throw e;
         } catch (Exception e) {
             logger.error("查询异常,异常信息：" + e.getMessage());
             throw new ObjectException(ObjectException.UNKNOWN_EXCEPTION,
@@ -222,6 +276,26 @@ public class ElkOptLogManager implements OperationLogManager {
             if (restHighLevelClient != null) {
                 clientPool.returnObject(restHighLevelClient);
             }
+        }
+    }
+
+    private String encodeSearchAfter(Object[] sortValues) {
+        String json = JSON.toJSONString(sortValues);
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(
+            json.getBytes(StandardCharsets.UTF_8));
+    }
+
+    private Object[] decodeSearchAfter(String cursor) {
+        try {
+            String json = new String(Base64.getUrlDecoder().decode(cursor), StandardCharsets.UTF_8);
+            JSONArray values = JSONArray.parseArray(json);
+            Object[] result = new Object[values.size()];
+            for (int i = 0; i < values.size(); i++) {
+                result[i] = values.get(i);
+            }
+            return result;
+        } catch (Exception e) {
+            throw new ObjectException("searchAfter 游标格式不正确");
         }
     }
 
